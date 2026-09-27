@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>v3rbatim — souffleur vocal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600&family=Noto+Naskh+Arabic:wght@400;500&family=Noto+Sans+Arabic:wght@400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js"></script>
+<style>
+:root{
+  --bg:#EDEFF2; --panel:#F8F9FA; --ink:#1C2230; --muted:#8C94A3; --line:#D5D9E0;
+  --ok:#2F6B5E; --ok-soft:#D7EAE4; --miss:#B4543A; --cue:#5E5A86; --focus:#2F6B5E;
+  --serif:"Newsreader", "Noto Naskh Arabic", Georgia, "Times New Roman", serif;
+  --sans:"Figtree", "Noto Sans Arabic", system-ui, -apple-system, "Segoe UI", sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12161E; --panel:#1A1F2A; --ink:#E8EBF1; --muted:#5E6677; --line:#2A3140;
+    --ok:#7FD1B9; --ok-soft:#1F3A34; --miss:#E48B70; --cue:#A9A4D6; --focus:#7FD1B9;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12161E; --panel:#1A1F2A; --ink:#E8EBF1; --muted:#5E6677; --line:#2A3140;
+  --ok:#7FD1B9; --ok-soft:#1F3A34; --miss:#E48B70; --cue:#A9A4D6; --focus:#7FD1B9;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%}
+body{margin:0; min-height:100%; background:var(--bg); color:var(--ink); font-family:var(--sans); font-size:16px; line-height:1.5; -webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit; color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--focus); outline-offset:2px}
+.wrap{max-width:760px; margin:0 auto; padding:20px 20px 40px}
+header{display:flex; align-items:baseline; justify-content:space-between; gap:12px; padding:8px 0 20px}
+.brand{font-family:var(--serif); font-size:1.6rem; font-weight:500; letter-spacing:-.01em}
+.brand small{font-family:var(--sans); font-size:.85rem; color:var(--muted); margin-inline-start:8px; font-weight:400}
+.hdr-right{display:flex; align-items:center; gap:14px}
+.uiLang{background:transparent; border:1px solid var(--line); border-radius:8px; padding:4px 6px; font-size:.9rem; color:var(--muted)}
+.link{background:none; border:0; padding:4px 0; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
+.link:hover{color:var(--ink)}
+[hidden]{display:none!important}
+
+/* Chargement */
+.drop{border:1.5px dashed var(--line); border-radius:14px; padding:44px 24px; text-align:center; background:var(--panel); transition:border-color .15s, background .15s}
+.drop.over{border-color:var(--ok); background:var(--ok-soft)}
+.drop h1{font-family:var(--serif); font-weight:400; font-size:clamp(1.6rem,4.5vw,2.2rem); line-height:1.2; margin:0 0 10px}
+.drop p{color:var(--muted); margin:0 auto 22px; max-width:46ch}
+.btn{display:inline-flex; align-items:center; gap:8px; border:1px solid var(--line); background:var(--panel); padding:10px 16px; border-radius:10px; font-weight:500}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.btn.primary:hover{opacity:.9}
+.btn:disabled{opacity:.45; cursor:default}
+.row{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.center{justify-content:center}
+.alt{margin-top:18px; display:flex; gap:18px; justify-content:center; flex-wrap:wrap}
+textarea{width:100%; min-height:180px; border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--panel); resize:vertical; font-family:var(--serif); font-size:1.05rem}
+.err{color:var(--miss); margin-top:14px}
+.note{color:var(--muted); font-size:.9rem}
+
+/* Réglages */
+h2{font-family:var(--serif); font-weight:400; font-size:1.5rem; margin:0 0 6px}
+.section{margin-bottom:28px}
+.chips{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.chip{border:1px solid var(--line); background:var(--panel); border-radius:999px; padding:8px 14px}
+.chip span{color:var(--muted); margin-inline-start:6px; font-size:.9rem}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.chip[aria-pressed="true"] span{color:inherit; opacity:.7}
+.settings{display:grid; gap:14px; grid-template-columns:1fr; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:16px}
+.settings label{display:flex; justify-content:space-between; align-items:center; gap:16px}
+.settings label > span:first-child{flex:1}
+.settings small{display:block; color:var(--muted); font-size:.85rem}
+select,input[type=range]{accent-color:var(--ok)}
+select{background:var(--bg); border:1px solid var(--line); border-radius:8px; padding:6px 8px}
+input[type=checkbox]{width:20px; height:20px; accent-color:var(--ok)}
+.preview{margin-top:10px; max-height:220px; overflow:auto; border-inline-start:2px solid var(--line); padding-inline-start:14px; font-family:var(--serif); color:var(--muted)}
+.preview p{margin:0 0 6px}
+.preview b{font-family:var(--sans); font-weight:600; font-size:.85rem; color:var(--ink)}
+
+/* Répétition */
+.top{display:flex; align-items:center; gap:14px; margin-bottom:22px}
+.bar{flex:1; height:4px; background:var(--line); border-radius:4px; overflow:hidden}
+.bar i{display:block; height:100%; background:var(--ok); width:0; transition:width .3s}
+.count{font-variant-numeric:tabular-nums; color:var(--muted); font-size:.9rem; white-space:nowrap}
+.cues{margin-bottom:18px}
+.cue{font-family:var(--serif); color:var(--muted); margin:0 0 8px; font-size:1.02rem}
+.cue b{font-family:var(--sans); font-weight:600; font-size:.8rem; color:var(--cue); margin-inline-end:6px}
+.cue.dir{font-style:italic}
+.stage{position:relative; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:clamp(20px,5vw,36px); min-height:220px}
+.who{font-weight:600; font-size:.85rem; color:var(--cue); margin-bottom:10px}
+.lineText{font-family:var(--serif); font-size:clamp(1.45rem,4.2vw,2.15rem); line-height:1.45; letter-spacing:-.005em}
+.w{color:var(--muted); transition:color .18s}
+.w.ok{color:var(--ink)}
+.w.miss{color:var(--miss); text-decoration:line-through; text-decoration-thickness:1px}
+.w.next{color:var(--ink); text-decoration:underline; text-decoration-color:var(--ok); text-underline-offset:6px; text-decoration-thickness:2px}
+.w.skip{color:var(--muted); font-style:italic}
+.masked .w:not(.ok):not(.skip):not(.peek){color:transparent; background:var(--line); border-radius:4px; box-decoration-break:clone; -webkit-box-decoration-break:clone}
+.masked .w.miss{text-decoration:none}
+.stage.done{border-color:var(--ok); box-shadow:0 0 0 3px var(--ok-soft)}
+.meter{display:flex; align-items:center; gap:10px; margin-top:22px; color:var(--muted); font-size:.9rem}
+.meter .bar{height:6px}
+.heard{margin-top:14px; min-height:1.5em; color:var(--muted); font-size:.95rem; font-style:italic; overflow-wrap:anywhere}
+.controls{display:flex; align-items:center; justify-content:center; gap:14px; margin-top:26px; flex-wrap:wrap}
+.mic{width:72px; height:72px; border-radius:50%; border:0; background:var(--ink); color:var(--bg); display:grid; place-items:center; position:relative}
+.mic svg{width:28px; height:28px}
+.mic.on{background:var(--ok)}
+.mic.on::after{content:""; position:absolute; inset:-6px; border-radius:50%; border:2px solid var(--ok); opacity:.5; animation:pulse 1.6s ease-out infinite}
+@keyframes pulse{from{transform:scale(.92); opacity:.6} to{transform:scale(1.18); opacity:0}}
+@media (prefers-reduced-motion:reduce){.mic.on::after{animation:none} .w,.bar i{transition:none}}
+.hint{text-align:center; color:var(--muted); font-size:.85rem; margin-top:14px}
+kbd{font-family:var(--sans); font-size:.8rem; border:1px solid var(--line); border-bottom-width:2px; border-radius:5px; padding:0 5px; background:var(--panel)}
+
+/* Prompteur */
+body.prompting{overflow:hidden}
+.prompter{position:fixed; inset:0; z-index:10; background:#0D1015; color:#EDEFF3; display:flex; flex-direction:column;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+.pscroll{flex:1; overflow-y:auto; -webkit-overflow-scrolling:touch; overscroll-behavior:contain}
+.ptext{--ps:1; max-width:920px; margin:0 auto; padding:30vh 6vw 65vh; font-family:var(--serif);
+  font-size:calc(clamp(1.6rem, 4.4vw, 2.9rem) * var(--ps)); line-height:1.45}
+.pp{margin:0 0 .9em; color:#9BA3B4; cursor:pointer; transition:color .25s}
+.pp.cur{color:#F5F6F8}
+.pp.past{color:#4B5263}
+.pp.other{color:#6E7587}
+.pp.other.cur{color:#C4C9D3}
+.pp .said{color:#7C8496}
+.pp.past .said{color:inherit}
+.pp .at{box-shadow:inset 0 -.1em 0 #7FD1B9}
+.pp .nm{display:block; font-family:var(--sans); font-size:.42em; font-weight:600; color:#A9A4D6; margin-bottom:.25em}
+.pp.dir{font-family:var(--sans); font-size:.6em; color:#E9B44C; border-inline-start:3px solid #E9B44C; padding-inline-start:.7em}
+.pp.dir.past{color:#6E5A2E; border-color:#6E5A2E}
+.pbar{display:flex; align-items:center; gap:10px; padding:10px 14px; border-top:1px solid #222834; background:#0D1015}
+.pbtn{background:#1A1F29; border:1px solid #2A3140; color:#C9CED8; border-radius:10px; padding:10px 14px; min-width:48px; min-height:44px}
+.pstatus{flex:1; text-align:center; color:#8A92A3; font-size:.88rem; line-height:1.3}
+.pmic{width:52px; height:52px; border-radius:50%; border:0; background:#2A3140; color:#fff; display:grid; place-items:center; flex:none}
+.pmic svg{width:22px; height:22px}
+.pmic.on{background:#2F8F75}
+.perr{position:absolute; bottom:calc(84px + env(safe-area-inset-bottom,0px)); left:14px; right:14px; margin:0;
+  background:#3A1D17; color:#F2C4B5; padding:12px 14px; border-radius:10px; cursor:pointer}
+@media (prefers-reduced-motion:reduce){.pp{transition:none}}
+
+/* Bilan */
+.summary{list-style:none; padding:0; margin:18px 0 26px; border-top:1px solid var(--line)}
+.summary li{display:flex; gap:14px; padding:12px 0; border-bottom:1px solid var(--line); align-items:baseline}
+.summary .t{flex:1; font-family:var(--serif)}
+.summary .s{font-variant-numeric:tabular-nums; font-weight:600; white-space:nowrap}
+.summary .s.good{color:var(--ok)} .summary .s.low{color:var(--miss)}
+.big{font-family:var(--serif); font-size:clamp(2rem,6vw,3rem); line-height:1.1; margin:0 0 6px; font-weight:400}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">v3rbatim<small data-i18n="tagline">ton souffleur vocal</small></div>
+    <div class="hdr-right">
+      <button class="link" id="newScript" hidden data-i18n="newScript">Changer de script</button>
+      <select id="uiLang" class="uiLang" data-i18n-aria="uiLangLabel" aria-label="Langue de l’interface">
+        <option value="fr">Français</option>
+        <option value="en">English</option>
+        <option value="es">Español</option>
+        <option value="de">Deutsch</option>
+        <option value="it">Italiano</option>
+        <option value="sv">Svenska</option>
+        <option value="pt">Português</option>
+        <option value="ar">العربية</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Écran 1 : chargement -->
+  <section id="screenLoad">
+    <div class="drop" id="drop">
+      <h1 data-i18n="dropTitle">Dépose ton script Word ici</h1>
+      <p data-i18n="dropText">Tes répliques s’affichent une à une. Dis-les à voix haute : dès que c’est bon, on passe à la suivante.</p>
+      <div class="row center">
+        <label class="btn primary" for="file" data-i18n="chooseFile">Choisir un fichier .docx</label>
+        <input type="file" id="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+      </div>
+      <div class="alt">
+        <button class="link" id="showPaste" data-i18n="showPaste">Coller le texte à la place</button>
+        <button class="link" id="resume" hidden></button>
+        <button class="link" id="demo" data-i18n="demo">Essayer avec un exemple</button>
+        <button class="link" id="dlDemo" data-i18n="dlDemo">Télécharger l’exemple (.docx)</button>
+      </div>
+    </div>
+    <div id="pasteBox" hidden style="margin-top:18px">
+      <textarea id="pasteText" dir="auto" data-i18n-ph="pastePh" placeholder="NOM : réplique&#10;AUTRE NOM : réplique…&#10;&#10;ou simplement un paragraphe par réplique."></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn primary" id="usePaste" data-i18n="usePaste">Utiliser ce texte</button></div>
+    </div>
+    <p class="err" id="loadErr" hidden></p>
+    <p class="note" style="margin-top:22px" data-i18n="formats">Formats reconnus : « NOM : texte » sur une ligne, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ou crochets sont affichées mais pas à dire. Sans noms, chaque paragraphe est une réplique.</p>
+  </section>
+
+  <!-- Écran 2 : réglages -->
+  <section id="screenSetup" hidden>
+    <div class="section" id="speakerSection">
+      <h2 id="setupTitle">Quel rôle joues-tu ?</h2>
+      <p class="note" id="setupNote"></p>
+      <div class="chips" id="speakers"></div>
+    </div>
+    <div class="section">
+      <div class="settings">
+        <label><span data-i18n="speechLang">Langue parlée</span>
+          <select id="lang">
+            <option value="fr-FR">Français</option>
+            <option value="en-US">Anglais (US)</option>
+            <option value="en-GB">Anglais (UK)</option>
+            <option value="es-ES">Espagnol</option>
+            <option value="de-DE">Allemand</option>
+            <option value="it-IT">Italien</option>
+            <option value="sv-SE">Suédois</option>
+            <option value="pt-PT">Portugais (Portugal)</option>
+            <option value="pt-BR">Portugais (Brésil)</option>
+            <option value="ar-SA">Arabe</option>
+          </select></label>
+        <label><span><span data-i18n="thr">Exigence</span><small id="thrLabel">75 % des mots</small></span>
+          <input type="range" id="thr" min="50" max="100" step="5" value="75"></label>
+        <label><span><span data-i18n="mask">Masquer le texte</span><small data-i18n="maskHelp">Les mots apparaissent au fur et à mesure que tu les dis</small></span>
+          <input type="checkbox" id="mask"></label>
+        <label><span><span data-i18n="auto">Passer automatiquement</span><small data-i18n="autoHelp">Désactive pour valider toi-même chaque réplique</small></span>
+          <input type="checkbox" id="auto" checked></label>
+      </div>
+    </div>
+    <div class="section">
+      <h2 style="font-size:1.15rem" data-i18n="preview">Aperçu du script</h2>
+      <div class="preview" id="preview"></div>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="start" data-i18n="start">Commencer la répétition</button>
+      <button class="btn" id="prompt" data-i18n="prompt">Mode prompteur</button>
+    </div>
+    <p class="note" style="margin-top:10px" data-i18n="promptDesc">Pour une démo : le texte défile tout seul en suivant ta voix, sans rien valider.</p>
+  </section>
+
+  <!-- Écran 3 : répétition -->
+  <section id="screenRun" hidden>
+    <div class="top">
+      <button class="btn" id="exitRun" data-i18n="exit">Quitter</button>
+      <div class="bar"><i id="progress"></i></div>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="cues" id="cues"></div>
+    <div class="stage" id="stage">
+      <div class="who" id="who"></div>
+      <div class="lineText" id="lineText" dir="auto" aria-live="polite"></div>
+      <div class="meter"><span id="pct">0 %</span><div class="bar"><i id="lineBar"></i></div></div>
+      <div class="heard" id="heard" dir="auto"></div>
+    </div>
+    <div class="controls">
+      <button class="btn" id="prev" data-i18n-aria="ariaPrev" data-i18n="prev" aria-label="Réplique précédente">Précédente</button>
+      <button class="mic" id="mic" aria-label="Activer le micro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+      <button class="btn" id="next" data-i18n-aria="ariaNext" aria-label="Réplique suivante">Suivante</button>
+    </div>
+    <div class="row center" style="margin-top:14px; gap:18px">
+      <button class="link" id="retry" data-i18n="retry">Recommencer la réplique</button>
+      <button class="link" id="peek" data-i18n="peek">Souffler le mot suivant</button>
+    </div>
+    <p class="err" id="micErr" hidden style="text-align:center"></p>
+    <p class="hint" data-i18n-html="hint"><kbd>Espace</kbd> micro · <kbd>→</kbd> suivante · <kbd>←</kbd> précédente · <kbd>R</kbd> recommencer · <kbd>S</kbd> souffler</p>
+  </section>
+
+  <!-- Écran 5 : prompteur -->
+  <section id="screenPrompt" class="prompter" hidden>
+    <div class="pscroll" id="pscroll"><div class="ptext" id="ptext"></div></div>
+    <p class="perr" id="pErr" hidden></p>
+    <div class="pbar">
+      <button class="pbtn" id="pExit" data-i18n="exit">Quitter</button>
+      <button class="pbtn" id="pSmaller" data-i18n-aria="smaller" aria-label="Réduire le texte">A−</button>
+      <button class="pbtn" id="pBigger" data-i18n-aria="bigger" aria-label="Agrandir le texte">A+</button>
+      <span class="pstatus" id="pStatus"></span>
+      <button class="pmic" id="pMic" aria-label="Activer le micro">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
+      </button>
+    </div>
+  </section>
+
+  <!-- Écran 4 : bilan -->
+  <section id="screenEnd" hidden>
+    <p class="big" data-i18n="endTitle">Fin du script.</p>
+    <p class="note" id="endNote"></p>
+    <ul class="summary" id="summary"></ul>
+    <div class="row">
+      <button class="btn primary" id="again" data-i18n="again">Recommencer depuis le début</button>
+      <button class="btn" id="onlyWeak" data-i18n="onlyWeak">Retravailler les répliques ratées</button>
+      <button class="btn" id="toSetup" data-i18n="toSetup">Retour aux réglages</button>
+    </div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  /* ---------- Réglages persistants ---------- */
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem('repete:'+k); return v === null ? d : JSON.parse(v); } catch { return d; } },
+    set(k, v){ try { localStorage.setItem('repete:'+k, JSON.stringify(v)); } catch {} }
+  };
+  $('thr').value = store.get('thr', 75);
+  $('mask').checked = store.get('mask', false);
+  $('auto').checked = store.get('auto', true);
+  const thrLabel = () => $('thrLabel').textContent = t('thrLabel', $('thr').value);
+  /* ---------- Langue de l'interface ---------- */
+  const pl = (n, one, many) => n > 1 ? many : one;
+  const I18N = {
+    fr: {
+      toSetup:'Retour aux réglages',
+      dlDemo:'Télécharger l’exemple (.docx)',
+      prompt:'Mode prompteur', promptDesc:'Pour une démo : le texte défile tout seul en suivant ta voix, sans rien valider.', exit:'Quitter', smaller:'Réduire le texte', bigger:'Agrandir le texte', tapHint:'Touche un passage pour t’y placer', listening:'Écoute', paused:'En pause', resumeLast:n=>`Reprendre « ${n} »`, lastScript:'le dernier script',
+      sep:' : ', tagline:'ton souffleur vocal', newScript:'Changer de script', uiLangLabel:'Langue de l’interface',
+      dropTitle:'Dépose ton script Word ici',
+      dropText:'Tes répliques s’affichent une à une. Dis-les à voix haute : dès que c’est bon, on passe à la suivante.',
+      chooseFile:'Choisir un fichier .docx', showPaste:'Coller le texte à la place', demo:'Essayer avec un exemple',
+      pastePh:'NOM : réplique\nAUTRE NOM : réplique…\n\nou simplement un paragraphe par réplique.',
+      usePaste:'Utiliser ce texte',
+      formats:'Formats reconnus : « NOM : texte » sur une ligne, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ou crochets sont affichées mais pas à dire. Sans noms, chaque paragraphe est une réplique.',
+      speechLang:'Langue parlée', thr:'Exigence', thrLabel:n=>`${n} % des mots`,
+      mask:'Masquer le texte', maskHelp:'Les mots apparaissent au fur et à mesure que tu les dis',
+      auto:'Passer automatiquement', autoHelp:'Désactive pour valider toi-même chaque réplique',
+      preview:'Aperçu du script', start:'Commencer la répétition',
+      prev:'Précédente', next:'Suivante', finish:'Terminer', ariaPrev:'Réplique précédente', ariaNext:'Réplique suivante',
+      retry:'Recommencer la réplique', peek:'Souffler le mot suivant',
+      hint:'<kbd>Espace</kbd> micro · <kbd>→</kbd> suivante · <kbd>←</kbd> précédente · <kbd>R</kbd> recommencer · <kbd>S</kbd> souffler',
+      endTitle:'Fin du script.', again:'Recommencer depuis le début', onlyWeak:'Retravailler les répliques ratées',
+      setupRole:'Quel rôle joues-tu ?', setupReady:'Script prêt', allScript:'Tout le script',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'réplique','répliques')}, ${k} ${pl(k,'intervenant','intervenants')}. Les répliques des autres s’affichent comme repères.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'réplique','répliques')}. Aucun nom d’intervenant détecté : chaque paragraphe est une réplique à dire.`,
+      more:n=>`… et ${n} de plus`,
+      errNoLines:'Aucune réplique trouvée dans ce document. Vérifie qu’il contient du texte.',
+      errDoc:'Les fichiers .doc (ancien format Word) ne sont pas lus. Ouvre-le dans Word et enregistre-le en .docx.',
+      errNotDocx:'Ce fichier n’est pas un document Word .docx.',
+      errMammoth:'Le lecteur de fichiers Word n’a pas pu se charger. Vérifie ta connexion, ou colle le texte à la place.',
+      errRead:'Impossible de lire ce fichier. Il est peut-être protégé ou endommagé.',
+      errRoleEmpty:'Ce rôle n’a aucune réplique.',
+      srFramed:'La reconnaissance vocale n’est pas disponible dans cette fenêtre. Télécharge le fichier et ouvre-le dans Chrome, Edge ou Safari.',
+      srNone:'Ce navigateur ne fait pas de reconnaissance vocale. Utilise Chrome, Edge ou Safari — ou avance avec les boutons.',
+      micFramed:'Le micro ne peut pas démarrer dans cette fenêtre intégrée. Télécharge le fichier et ouvre-le directement dans Chrome, Edge ou Safari.',
+      micBlocked:'Le micro est bloqué. Autorise-le dans ton navigateur (icône à gauche de l’adresse), puis appuie de nouveau sur le micro.',
+      noMic:'Aucun micro détecté. Branche-en un puis réessaie.',
+      network:'La reconnaissance vocale a besoin d’Internet. Vérifie ta connexion.',
+      yourTurn:'À toi…', micOff:'Micro coupé', micOnLabel:'Couper le micro', micOffLabel:'Activer le micro',
+      quote:t=>`« ${t} »`, skipped:'passée · ', pct:n=>`${n} %`,
+      endNote:(g,t)=>`${g} ${pl(g,'réplique validée','répliques validées')} à la voix sur ${t}.`,
+      demoName:'Exemple',
+      demoText:`LÉA : Bonjour à tous, et merci d’être venus aussi nombreux ce matin.
+MARC : Aujourd’hui, nous allons vous présenter les résultats du trimestre.
+LÉA : Nos ventes ont progressé de douze pour cent par rapport à l’année dernière.
+(Marc affiche le graphique)
+MARC : Cette croissance vient surtout de nos nouveaux clients en Europe.
+LÉA : Et ce n’est qu’un début : trois lancements sont prévus d’ici la fin de l’année.
+MARC : Nous prendrons vos questions à la fin de la présentation.
+LÉA : Merci, et place aux chiffres.`, demoSpeech:'fr-FR'
+    },
+    en: {
+      toSetup:'Back to settings',
+      dlDemo:'Download the example (.docx)',
+      prompt:'Teleprompter mode', promptDesc:'For demos: the text scrolls on its own as you speak, with no checking.', exit:'Exit', smaller:'Smaller text', bigger:'Larger text', tapHint:'Tap a passage to jump to it', listening:'Listening', paused:'Paused', resumeLast:n=>`Resume “${n}”`, lastScript:'last script',
+      sep:': ', tagline:'your voice prompter', newScript:'Change script', uiLangLabel:'Interface language',
+      dropTitle:'Drop your Word script here',
+      dropText:'Your lines appear one at a time. Say them out loud: as soon as you get it right, you move on to the next one.',
+      chooseFile:'Choose a .docx file', showPaste:'Paste the text instead', demo:'Try an example',
+      pastePh:'NAME: line\nOTHER NAME: line…\n\nor just one paragraph per line.',
+      usePaste:'Use this text',
+      formats:'Supported formats: “NAME: text” on one line, or the name alone in capitals followed by the line. Directions in parentheses or brackets are shown but not spoken. With no names, each paragraph is a line.',
+      speechLang:'Spoken language', thr:'Strictness', thrLabel:n=>`${n}% of words`,
+      mask:'Hide the text', maskHelp:'Words appear as you say them',
+      auto:'Move on automatically', autoHelp:'Turn off to confirm each line yourself',
+      preview:'Script preview', start:'Start rehearsing',
+      prev:'Previous', next:'Next', finish:'Finish', ariaPrev:'Previous line', ariaNext:'Next line',
+      retry:'Restart this line', peek:'Prompt the next word',
+      hint:'<kbd>Space</kbd> mic · <kbd>→</kbd> next · <kbd>←</kbd> previous · <kbd>R</kbd> restart · <kbd>S</kbd> prompt',
+      endTitle:'End of script.', again:'Start over', onlyWeak:'Practise the missed lines',
+      setupRole:'Which part are you playing?', setupReady:'Script ready', allScript:'Whole script',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'line','lines')}, ${k} ${pl(k,'speaker','speakers')}. Other people’s lines are shown as cues.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'line','lines')}. No speaker names found: each paragraph is a line to say.`,
+      more:n=>`… and ${n} more`,
+      errNoLines:'No lines found in this document. Check that it contains text.',
+      errDoc:'Old .doc files can’t be read. Open it in Word and save it as .docx.',
+      errNotDocx:'This file isn’t a Word .docx document.',
+      errMammoth:'The Word file reader couldn’t load. Check your connection, or paste the text instead.',
+      errRead:'This file can’t be read. It may be protected or damaged.',
+      errRoleEmpty:'This part has no lines.',
+      srFramed:'Speech recognition isn’t available in this window. Download the file and open it in Chrome, Edge or Safari.',
+      srNone:'This browser doesn’t support speech recognition. Use Chrome, Edge or Safari — or move on with the buttons.',
+      micFramed:'The microphone can’t start in this embedded window. Download the file and open it directly in Chrome, Edge or Safari.',
+      micBlocked:'The microphone is blocked. Allow it in your browser (icon to the left of the address), then tap the mic again.',
+      noMic:'No microphone found. Plug one in and try again.',
+      network:'Speech recognition needs an internet connection. Check your connection.',
+      yourTurn:'Your turn…', micOff:'Mic off', micOnLabel:'Turn microphone off', micOffLabel:'Turn microphone on',
+      quote:t=>`“${t}”`, skipped:'skipped · ', pct:n=>`${n}%`,
+      endNote:(g,t)=>`${g} of ${t} ${pl(t,'line','lines')} confirmed by voice.`,
+      demoName:'Example',
+      demoText:`LEA: Good morning everyone, and thank you for coming.
+MARK: Today we are going to present this quarter’s results.
+LEA: Our sales grew by twelve percent compared with last year.
+(Mark shows the chart)
+MARK: Most of this growth comes from our new customers in Europe.
+LEA: And this is only the beginning: three launches are planned before the end of the year.
+MARK: We will take your questions at the end of the presentation.
+LEA: Thank you, and now over to the numbers.`, demoSpeech:'en-US'
+    },
+    es: {
+      toSetup:'Volver a los ajustes',
+      dlDemo:'Descargar el ejemplo (.docx)',
+      prompt:'Modo teleprompter', promptDesc:'Para demos: el texto avanza solo siguiendo tu voz, sin validar nada.', exit:'Salir', smaller:'Texto más pequeño', bigger:'Texto más grande', tapHint:'Toca un pasaje para situarte en él', listening:'Escuchando', paused:'En pausa', resumeLast:n=>`Retomar «${n}»`, lastScript:'el último guion',
+      sep:': ', tagline:'tu apuntador por voz', newScript:'Cambiar de guion', uiLangLabel:'Idioma de la interfaz',
+      dropTitle:'Suelta aquí tu guion de Word',
+      dropText:'Tus frases aparecen una a una. Dilas en voz alta: en cuanto esté bien, pasas a la siguiente.',
+      chooseFile:'Elegir un archivo .docx', showPaste:'Pegar el texto en su lugar', demo:'Probar con un ejemplo',
+      pastePh:'NOMBRE: frase\nOTRO NOMBRE: frase…\n\no simplemente un párrafo por frase.',
+      usePaste:'Usar este texto',
+      formats:'Formatos admitidos: «NOMBRE: texto» en una línea, o el nombre solo en mayúsculas seguido de la frase. Las acotaciones entre paréntesis o corchetes se muestran pero no se dicen. Sin nombres, cada párrafo es una frase.',
+      speechLang:'Idioma hablado', thr:'Exigencia', thrLabel:n=>`${n} % de las palabras`,
+      mask:'Ocultar el texto', maskHelp:'Las palabras aparecen a medida que las dices',
+      auto:'Avanzar automáticamente', autoHelp:'Desactívalo para validar tú mismo cada frase',
+      preview:'Vista previa del guion', start:'Empezar el ensayo',
+      prev:'Anterior', next:'Siguiente', finish:'Terminar', ariaPrev:'Frase anterior', ariaNext:'Frase siguiente',
+      retry:'Repetir la frase', peek:'Soplar la palabra siguiente',
+      hint:'<kbd>Espacio</kbd> micro · <kbd>→</kbd> siguiente · <kbd>←</kbd> anterior · <kbd>R</kbd> repetir · <kbd>S</kbd> soplar',
+      endTitle:'Fin del guion.', again:'Empezar de nuevo', onlyWeak:'Repasar las frases falladas',
+      setupRole:'¿Qué papel interpretas?', setupReady:'Guion listo', allScript:'Todo el guion',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'frase','frases')}, ${k} ${pl(k,'interlocutor','interlocutores')}. Las frases de los demás se muestran como referencia.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'frase','frases')}. No se detectaron nombres: cada párrafo es una frase que decir.`,
+      more:n=>`… y ${n} más`,
+      errNoLines:'No se encontró ninguna frase en este documento. Comprueba que contiene texto.',
+      errDoc:'Los archivos .doc antiguos no se pueden leer. Ábrelo en Word y guárdalo como .docx.',
+      errNotDocx:'Este archivo no es un documento de Word .docx.',
+      errMammoth:'El lector de archivos de Word no se pudo cargar. Comprueba tu conexión o pega el texto.',
+      errRead:'No se puede leer este archivo. Puede estar protegido o dañado.',
+      errRoleEmpty:'Este papel no tiene frases.',
+      srFramed:'El reconocimiento de voz no está disponible en esta ventana. Descarga el archivo y ábrelo en Chrome, Edge o Safari.',
+      srNone:'Este navegador no admite reconocimiento de voz. Usa Chrome, Edge o Safari, o avanza con los botones.',
+      micFramed:'El micrófono no puede arrancar en esta ventana integrada. Descarga el archivo y ábrelo directamente en Chrome, Edge o Safari.',
+      micBlocked:'El micrófono está bloqueado. Permítelo en tu navegador (icono a la izquierda de la dirección) y vuelve a pulsar el micro.',
+      noMic:'No se detecta ningún micrófono. Conecta uno y vuelve a intentarlo.',
+      network:'El reconocimiento de voz necesita conexión a Internet. Comprueba tu conexión.',
+      yourTurn:'Tu turno…', micOff:'Micro apagado', micOnLabel:'Apagar el micrófono', micOffLabel:'Activar el micrófono',
+      quote:t=>`«${t}»`, skipped:'saltada · ', pct:n=>`${n} %`,
+      endNote:(g,t)=>`${g} de ${t} ${pl(t,'frase validada','frases validadas')} por voz.`,
+      demoName:'Ejemplo',
+      demoText:`LEA: Buenos días a todos y gracias por venir esta mañana.
+MARCOS: Hoy vamos a presentaros los resultados del trimestre.
+LEA: Nuestras ventas han crecido un doce por ciento respecto al año pasado.
+(Marcos muestra el gráfico)
+MARCOS: Este crecimiento viene sobre todo de nuestros nuevos clientes en Europa.
+LEA: Y esto es solo el principio: hay tres lanzamientos previstos antes de fin de año.
+MARCOS: Responderemos a vuestras preguntas al final de la presentación.
+LEA: Gracias, y vamos con las cifras.`, demoSpeech:'es-ES'
+    },
+    de: {
+      toSetup:'Zurück zu den Einstellungen',
+      dlDemo:'Beispiel herunterladen (.docx)',
+      prompt:'Teleprompter-Modus', promptDesc:'Für Demos: Der Text läuft von selbst mit deiner Stimme mit, ohne Prüfung.', exit:'Beenden', smaller:'Kleinerer Text', bigger:'Größerer Text', tapHint:'Tippe auf eine Stelle, um dorthin zu springen', listening:'Hört zu', paused:'Pausiert', resumeLast:n=>`„${n}“ fortsetzen`, lastScript:'letztes Skript',
+      sep:': ', tagline:'dein Sprach-Souffleur', newScript:'Skript wechseln', uiLangLabel:'Sprache der Oberfläche',
+      dropTitle:'Zieh dein Word-Skript hierher',
+      dropText:'Deine Sätze erscheinen einzeln. Sprich sie laut aus: Sobald es passt, geht es zum nächsten.',
+      chooseFile:'.docx-Datei auswählen', showPaste:'Stattdessen Text einfügen', demo:'Mit einem Beispiel testen',
+      pastePh:'NAME: Satz\nANDERER NAME: Satz…\n\noder einfach ein Absatz pro Satz.',
+      usePaste:'Diesen Text verwenden',
+      formats:'Unterstützte Formate: „NAME: Text“ in einer Zeile oder der Name allein in Großbuchstaben, gefolgt vom Satz. Regieanweisungen in Klammern werden angezeigt, aber nicht gesprochen. Ohne Namen ist jeder Absatz ein Satz.',
+      speechLang:'Gesprochene Sprache', thr:'Genauigkeit', thrLabel:n=>`${n} % der Wörter`,
+      mask:'Text ausblenden', maskHelp:'Wörter erscheinen, sobald du sie sagst',
+      auto:'Automatisch weiter', autoHelp:'Ausschalten, um jeden Satz selbst zu bestätigen',
+      preview:'Skriptvorschau', start:'Probe starten',
+      prev:'Zurück', next:'Weiter', finish:'Beenden', ariaPrev:'Vorheriger Satz', ariaNext:'Nächster Satz',
+      retry:'Satz neu beginnen', peek:'Nächstes Wort soufflieren',
+      hint:'<kbd>Leertaste</kbd> Mikro · <kbd>→</kbd> weiter · <kbd>←</kbd> zurück · <kbd>R</kbd> neu · <kbd>S</kbd> soufflieren',
+      endTitle:'Ende des Skripts.', again:'Von vorn beginnen', onlyWeak:'Verpasste Sätze üben',
+      setupRole:'Welche Rolle spielst du?', setupReady:'Skript bereit', allScript:'Ganzes Skript',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'Satz','Sätze')}, ${k} ${pl(k,'Sprecher','Sprecher')}. Die Sätze der anderen werden als Stichwort angezeigt.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'Satz','Sätze')}. Keine Sprechernamen erkannt: Jeder Absatz ist ein Satz zum Sprechen.`,
+      more:n=>`… und ${n} weitere`,
+      errNoLines:'In diesem Dokument wurden keine Sätze gefunden. Prüfe, ob es Text enthält.',
+      errDoc:'Alte .doc-Dateien können nicht gelesen werden. Öffne sie in Word und speichere sie als .docx.',
+      errNotDocx:'Diese Datei ist kein Word-Dokument (.docx).',
+      errMammoth:'Der Word-Leser konnte nicht geladen werden. Prüfe deine Verbindung oder füge den Text ein.',
+      errRead:'Diese Datei kann nicht gelesen werden. Sie ist möglicherweise geschützt oder beschädigt.',
+      errRoleEmpty:'Diese Rolle hat keine Sätze.',
+      srFramed:'Spracherkennung ist in diesem Fenster nicht verfügbar. Lade die Datei herunter und öffne sie in Chrome, Edge oder Safari.',
+      srNone:'Dieser Browser unterstützt keine Spracherkennung. Nutze Chrome, Edge oder Safari – oder geh mit den Tasten weiter.',
+      micFramed:'Das Mikrofon kann in diesem eingebetteten Fenster nicht starten. Lade die Datei herunter und öffne sie direkt in Chrome, Edge oder Safari.',
+      micBlocked:'Das Mikrofon ist blockiert. Erlaube es im Browser (Symbol links neben der Adresse) und tippe dann erneut auf das Mikro.',
+      noMic:'Kein Mikrofon gefunden. Schließ eins an und versuch es erneut.',
+      network:'Die Spracherkennung braucht eine Internetverbindung. Prüfe deine Verbindung.',
+      yourTurn:'Du bist dran…', micOff:'Mikro aus', micOnLabel:'Mikrofon ausschalten', micOffLabel:'Mikrofon einschalten',
+      quote:t=>`„${t}“`, skipped:'übersprungen · ', pct:n=>`${n} %`,
+      endNote:(g,t)=>`${g} von ${t} ${pl(t,'Satz','Sätzen')} per Stimme bestätigt.`,
+      demoName:'Beispiel',
+      demoText:`LEA: Guten Morgen zusammen und danke, dass ihr so zahlreich gekommen seid.
+MARK: Heute stellen wir euch die Ergebnisse des Quartals vor.
+LEA: Unser Umsatz ist im Vergleich zum Vorjahr um zwölf Prozent gestiegen.
+(Mark zeigt das Diagramm)
+MARK: Dieses Wachstum kommt vor allem von unseren neuen Kunden in Europa.
+LEA: Und das ist erst der Anfang: Bis Ende des Jahres sind drei Markteinführungen geplant.
+MARK: Eure Fragen beantworten wir am Ende der Präsentation.
+LEA: Danke, und jetzt zu den Zahlen.`, demoSpeech:'de-DE'
+    },
+    it: {
+      toSetup:'Torna alle impostazioni',
+      dlDemo:'Scarica l’esempio (.docx)',
+      prompt:'Modalità gobbo', promptDesc:'Per le demo: il testo scorre da solo seguendo la tua voce, senza verifiche.', exit:'Esci', smaller:'Testo più piccolo', bigger:'Testo più grande', tapHint:'Tocca un passaggio per posizionarti lì', listening:'In ascolto', paused:'In pausa', resumeLast:n=>`Riprendi «${n}»`, lastScript:'ultimo copione',
+      sep:': ', tagline:'il tuo suggeritore vocale', newScript:'Cambia copione', uiLangLabel:'Lingua dell’interfaccia',
+      dropTitle:'Trascina qui il tuo copione Word',
+      dropText:'Le tue battute appaiono una alla volta. Dille ad alta voce: appena è giusta, passi alla successiva.',
+      chooseFile:'Scegli un file .docx', showPaste:'Incolla il testo', demo:'Prova con un esempio',
+      pastePh:'NOME: battuta\nALTRO NOME: battuta…\n\no semplicemente un paragrafo per battuta.',
+      usePaste:'Usa questo testo',
+      formats:'Formati supportati: «NOME: testo» su una riga, oppure il nome da solo in maiuscolo seguito dalla battuta. Le didascalie tra parentesi tonde o quadre vengono mostrate ma non si dicono. Senza nomi, ogni paragrafo è una battuta.',
+      speechLang:'Lingua parlata', thr:'Precisione', thrLabel:n=>`${n}% delle parole`,
+      mask:'Nascondi il testo', maskHelp:'Le parole compaiono man mano che le dici',
+      auto:'Avanza automaticamente', autoHelp:'Disattiva per confermare tu ogni battuta',
+      preview:'Anteprima del copione', start:'Inizia la prova',
+      prev:'Precedente', next:'Successiva', finish:'Termina', ariaPrev:'Battuta precedente', ariaNext:'Battuta successiva',
+      retry:'Ricomincia la battuta', peek:'Suggerisci la parola successiva',
+      hint:'<kbd>Spazio</kbd> microfono · <kbd>→</kbd> successiva · <kbd>←</kbd> precedente · <kbd>R</kbd> ricomincia · <kbd>S</kbd> suggerisci',
+      endTitle:'Fine del copione.', again:'Ricomincia dall’inizio', onlyWeak:'Ripassa le battute sbagliate',
+      setupRole:'Che ruolo interpreti?', setupReady:'Copione pronto', allScript:'Tutto il copione',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'battuta','battute')}, ${k} ${pl(k,'personaggio','personaggi')}. Le battute degli altri appaiono come riferimento.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'battuta','battute')}. Nessun nome di personaggio rilevato: ogni paragrafo è una battuta da dire.`,
+      more:n=>`… e altre ${n}`,
+      errNoLines:'Nessuna battuta trovata in questo documento. Controlla che contenga del testo.',
+      errDoc:'I vecchi file .doc non possono essere letti. Aprilo in Word e salvalo come .docx.',
+      errNotDocx:'Questo file non è un documento Word .docx.',
+      errMammoth:'Il lettore di file Word non si è caricato. Controlla la connessione o incolla il testo.',
+      errRead:'Impossibile leggere questo file. Potrebbe essere protetto o danneggiato.',
+      errRoleEmpty:'Questo ruolo non ha battute.',
+      srFramed:'Il riconoscimento vocale non è disponibile in questa finestra. Scarica il file e aprilo in Chrome, Edge o Safari.',
+      srNone:'Questo browser non supporta il riconoscimento vocale. Usa Chrome, Edge o Safari, oppure avanza con i pulsanti.',
+      micFramed:'Il microfono non può avviarsi in questa finestra incorporata. Scarica il file e aprilo direttamente in Chrome, Edge o Safari.',
+      micBlocked:'Il microfono è bloccato. Consentilo nel browser (icona a sinistra dell’indirizzo), poi tocca di nuovo il microfono.',
+      noMic:'Nessun microfono rilevato. Collegane uno e riprova.',
+      network:'Il riconoscimento vocale richiede una connessione a Internet. Controlla la connessione.',
+      yourTurn:'Tocca a te…', micOff:'Microfono spento', micOnLabel:'Spegni il microfono', micOffLabel:'Accendi il microfono',
+      quote:t=>`«${t}»`, skipped:'saltata · ', pct:n=>`${n}%`,
+      endNote:(g,t)=>`${g} ${pl(g,'battuta convalidata','battute convalidate')} a voce su ${t}.`,
+      demoName:'Esempio',
+      demoText:`LEA: Buongiorno a tutti, e grazie di essere venuti così numerosi.
+MARCO: Oggi vi presentiamo i risultati del trimestre.
+LEA: Le nostre vendite sono cresciute del dodici per cento rispetto all’anno scorso.
+(Marco mostra il grafico)
+MARCO: Questa crescita arriva soprattutto dai nostri nuovi clienti in Europa.
+LEA: Ed è solo l’inizio: sono previsti tre lanci entro la fine dell’anno.
+MARCO: Risponderemo alle vostre domande alla fine della presentazione.
+LEA: Grazie, e ora passiamo ai numeri.`, demoSpeech:'it-IT'
+    },
+    sv: {
+      toSetup:'Tillbaka till inställningarna',
+      dlDemo:'Ladda ner exemplet (.docx)',
+      prompt:'Teleprompterläge', promptDesc:'För demos: texten rullar av sig själv i takt med rösten, utan kontroll.', exit:'Avsluta', smaller:'Mindre text', bigger:'Större text', tapHint:'Tryck på ett stycke för att hoppa dit', listening:'Lyssnar', paused:'Pausad', resumeLast:n=>`Fortsätt med ”${n}”`, lastScript:'senaste manuset',
+      sep:': ', tagline:'din röstsufflör', newScript:'Byt manus', uiLangLabel:'Gränssnittets språk',
+      dropTitle:'Släpp ditt Word-manus här',
+      dropText:'Dina repliker visas en i taget. Säg dem högt: så fort det stämmer går du vidare till nästa.',
+      chooseFile:'Välj en .docx-fil', showPaste:'Klistra in texten i stället', demo:'Prova med ett exempel',
+      pastePh:'NAMN: replik\nANNAT NAMN: replik…\n\neller bara ett stycke per replik.',
+      usePaste:'Använd den här texten',
+      formats:'Format som stöds: ”NAMN: text” på en rad, eller namnet ensamt med versaler följt av repliken. Scenanvisningar inom parentes eller hakparentes visas men sägs inte. Utan namn är varje stycke en replik.',
+      speechLang:'Talat språk', thr:'Noggrannhet', thrLabel:n=>`${n} % av orden`,
+      mask:'Dölj texten', maskHelp:'Orden visas allteftersom du säger dem',
+      auto:'Gå vidare automatiskt', autoHelp:'Stäng av för att själv bekräfta varje replik',
+      preview:'Förhandsvisning av manuset', start:'Börja repetera',
+      prev:'Föregående', next:'Nästa', finish:'Avsluta', ariaPrev:'Föregående replik', ariaNext:'Nästa replik',
+      retry:'Börja om repliken', peek:'Sufflera nästa ord',
+      hint:'<kbd>Mellanslag</kbd> mikrofon · <kbd>→</kbd> nästa · <kbd>←</kbd> föregående · <kbd>R</kbd> börja om · <kbd>S</kbd> sufflera',
+      endTitle:'Slut på manuset.', again:'Börja om från början', onlyWeak:'Öva på missade repliker',
+      setupRole:'Vilken roll spelar du?', setupReady:'Manuset är klart', allScript:'Hela manuset',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'replik','repliker')}, ${k} talare. De andras repliker visas som stickrepliker.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'replik','repliker')}. Inga talarnamn hittades: varje stycke är en replik att säga.`,
+      more:n=>`… och ${n} till`,
+      errNoLines:'Inga repliker hittades i dokumentet. Kontrollera att det innehåller text.',
+      errDoc:'Gamla .doc-filer kan inte läsas. Öppna filen i Word och spara den som .docx.',
+      errNotDocx:'Filen är inte ett Word-dokument (.docx).',
+      errMammoth:'Läsaren för Word-filer kunde inte laddas. Kontrollera anslutningen eller klistra in texten.',
+      errRead:'Filen kan inte läsas. Den kan vara skyddad eller skadad.',
+      errRoleEmpty:'Den här rollen har inga repliker.',
+      srFramed:'Taligenkänning är inte tillgänglig i det här fönstret. Ladda ner filen och öppna den i Chrome, Edge eller Safari.',
+      srNone:'Webbläsaren stöder inte taligenkänning. Använd Chrome, Edge eller Safari – eller gå vidare med knapparna.',
+      micFramed:'Mikrofonen kan inte starta i det här inbäddade fönstret. Ladda ner filen och öppna den direkt i Chrome, Edge eller Safari.',
+      micBlocked:'Mikrofonen är blockerad. Tillåt den i webbläsaren (ikonen till vänster om adressen) och tryck sedan på mikrofonen igen.',
+      noMic:'Ingen mikrofon hittades. Anslut en och försök igen.',
+      network:'Taligenkänningen kräver internetanslutning. Kontrollera anslutningen.',
+      yourTurn:'Din tur…', micOff:'Mikrofonen är av', micOnLabel:'Stäng av mikrofonen', micOffLabel:'Slå på mikrofonen',
+      quote:t=>`”${t}”`, skipped:'överhoppad · ', pct:n=>`${n} %`,
+      endNote:(g,t)=>`${g} av ${t} ${pl(t,'replik','repliker')} godkända med rösten.`,
+      demoName:'Exempel',
+      demoText:`LEA: God morgon allihop, och tack för att ni kom.
+MARK: I dag ska vi presentera kvartalets resultat.
+LEA: Vår försäljning har ökat med tolv procent jämfört med förra året.
+(Mark visar diagrammet)
+MARK: Tillväxten kommer främst från våra nya kunder i Europa.
+LEA: Och det här är bara början: tre lanseringar är planerade före årets slut.
+MARK: Vi tar era frågor i slutet av presentationen.
+LEA: Tack, och nu till siffrorna.`, demoSpeech:'sv-SE'
+    },
+    pt: {
+      toSetup:'Voltar às definições',
+      dlDemo:'Descarregar o exemplo (.docx)',
+      prompt:'Modo teleponto', promptDesc:'Para demos: o texto avança sozinho acompanhando a sua voz, sem validação.', exit:'Sair', smaller:'Texto menor', bigger:'Texto maior', tapHint:'Toque num trecho para ir até ele', listening:'A ouvir', paused:'Em pausa', resumeLast:n=>`Retomar “${n}”`, lastScript:'último roteiro',
+      sep:': ', tagline:'o seu ponto por voz', newScript:'Trocar de roteiro', uiLangLabel:'Idioma da interface',
+      dropTitle:'Solte aqui o seu roteiro do Word',
+      dropText:'As suas falas aparecem uma de cada vez. Diga-as em voz alta: assim que estiver certo, passa para a próxima.',
+      chooseFile:'Escolher um arquivo .docx', showPaste:'Colar o texto em vez disso', demo:'Experimentar com um exemplo',
+      pastePh:'NOME: fala\nOUTRO NOME: fala…\n\nou simplesmente um parágrafo por fala.',
+      usePaste:'Usar este texto',
+      formats:'Formatos aceitos: “NOME: texto” numa linha, ou o nome sozinho em maiúsculas seguido da fala. As rubricas entre parênteses ou colchetes aparecem, mas não são ditas. Sem nomes, cada parágrafo é uma fala.',
+      speechLang:'Idioma falado', thr:'Exigência', thrLabel:n=>`${n}% das palavras`,
+      mask:'Ocultar o texto', maskHelp:'As palavras aparecem à medida que as diz',
+      auto:'Avançar automaticamente', autoHelp:'Desative para validar cada fala manualmente',
+      preview:'Pré-visualização do roteiro', start:'Começar o ensaio',
+      prev:'Anterior', next:'Próxima', finish:'Concluir', ariaPrev:'Fala anterior', ariaNext:'Próxima fala',
+      retry:'Recomeçar a fala', peek:'Soprar a próxima palavra',
+      hint:'<kbd>Espaço</kbd> microfone · <kbd>→</kbd> próxima · <kbd>←</kbd> anterior · <kbd>R</kbd> recomeçar · <kbd>S</kbd> soprar',
+      endTitle:'Fim do roteiro.', again:'Recomeçar do início', onlyWeak:'Treinar as falas falhadas',
+      setupRole:'Que papel interpreta?', setupReady:'Roteiro pronto', allScript:'Roteiro inteiro',
+      noteSpeakers:(src,t,k)=>`${src}${t} ${pl(t,'fala','falas')}, ${k} ${pl(k,'personagem','personagens')}. As falas dos outros aparecem como deixas.`,
+      noteNone:(src,t)=>`${src}${t} ${pl(t,'fala','falas')}. Nenhum nome de personagem detetado: cada parágrafo é uma fala a dizer.`,
+      more:n=>`… e mais ${n}`,
+      errNoLines:'Nenhuma fala encontrada neste documento. Verifique se contém texto.',
+      errDoc:'Os arquivos .doc antigos não podem ser lidos. Abra-o no Word e guarde-o como .docx.',
+      errNotDocx:'Este arquivo não é um documento Word .docx.',
+      errMammoth:'O leitor de arquivos Word não carregou. Verifique a ligação ou cole o texto.',
+      errRead:'Não é possível ler este arquivo. Pode estar protegido ou danificado.',
+      errRoleEmpty:'Este papel não tem falas.',
+      srFramed:'O reconhecimento de voz não está disponível nesta janela. Descarregue o arquivo e abra-o no Chrome, Edge ou Safari.',
+      srNone:'Este navegador não suporta reconhecimento de voz. Use o Chrome, Edge ou Safari — ou avance com os botões.',
+      micFramed:'O microfone não pode iniciar nesta janela integrada. Descarregue o arquivo e abra-o diretamente no Chrome, Edge ou Safari.',
+      micBlocked:'O microfone está bloqueado. Autorize-o no navegador (ícone à esquerda do endereço) e toque novamente no microfone.',
+      noMic:'Nenhum microfone detetado. Ligue um e tente novamente.',
+      network:'O reconhecimento de voz precisa de internet. Verifique a ligação.',
+      yourTurn:'A sua vez…', micOff:'Microfone desligado', micOnLabel:'Desligar o microfone', micOffLabel:'Ligar o microfone',
+      quote:t=>`“${t}”`, skipped:'saltada · ', pct:n=>`${n}%`,
+      endNote:(g,t)=>`${g} de ${t} ${pl(t,'fala validada','falas validadas')} pela voz.`,
+      demoName:'Exemplo',
+      demoText:`LEA: Bom dia a todos, e obrigada por terem vindo.
+MARCOS: Hoje vamos apresentar os resultados do trimestre.
+LEA: As nossas vendas cresceram doze por cento em relação ao ano passado.
+(Marcos mostra o gráfico)
+MARCOS: Este crescimento vem sobretudo dos nossos novos clientes na Europa.
+LEA: E isto é só o começo: estão previstos três lançamentos até ao fim do ano.
+MARCOS: Responderemos às vossas perguntas no final da apresentação.
+LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
+    },
+    ar: {
+      toSetup:'العودة إلى الإعدادات',
+      dlDemo:'تنزيل المثال (‎.docx)',
+      prompt:'وضع الملقّن', promptDesc:'للعروض التوضيحية: يتحرك النص تلقائيًا مع صوتك، دون أي تحقق.', exit:'خروج', smaller:'تصغير النص', bigger:'تكبير النص', tapHint:'المس أي مقطع للانتقال إليه', listening:'يستمع', paused:'متوقف مؤقتًا', resumeLast:n=>`استئناف «${n}»`, lastScript:'آخر نص',
+      sep:': ', tagline:'ملقّنك الصوتي', newScript:'تغيير النص', uiLangLabel:'لغة الواجهة',
+      dropTitle:'أفلِت ملف Word الخاص بنصك هنا',
+      dropText:'تظهر مقاطعك واحدًا تلو الآخر. قلها بصوت عالٍ: بمجرد أن يكون المقطع صحيحًا، تنتقل إلى التالي.',
+      chooseFile:'اختيار ملف ‎.docx', showPaste:'لصق النص بدلًا من ذلك', demo:'التجربة بمثال',
+      pastePh:'الاسم: المقطع\nاسم آخر: المقطع…\n\nأو ببساطة فقرة واحدة لكل مقطع.',
+      usePaste:'استخدام هذا النص',
+      formats:'الصيغ المدعومة: «الاسم: النص» في سطر واحد، أو الاسم وحده في سطر (بأحرف كبيرة في اللغات اللاتينية) يليه المقطع. تُعرض الإرشادات المكتوبة بين قوسين دون أن تُقال. من دون أسماء، تكون كل فقرة مقطعًا.',
+      speechLang:'لغة الكلام', thr:'درجة الدقة', thrLabel:n=>`${n}٪ من الكلمات`,
+      mask:'إخفاء النص', maskHelp:'تظهر الكلمات كلما نطقت بها',
+      auto:'الانتقال تلقائيًا', autoHelp:'عطّله لتأكيد كل مقطع بنفسك',
+      preview:'معاينة النص', start:'بدء التمرين',
+      prev:'السابق', next:'التالي', finish:'إنهاء', ariaPrev:'المقطع السابق', ariaNext:'المقطع التالي',
+      retry:'إعادة المقطع', peek:'تلقين الكلمة التالية',
+      hint:'<kbd>مسافة</kbd> الميكروفون · <kbd>→</kbd> التالي · <kbd>←</kbd> السابق · <kbd>R</kbd> إعادة · <kbd>S</kbd> تلقين',
+      endTitle:'نهاية النص.', again:'البدء من جديد', onlyWeak:'التدرّب على المقاطع الفائتة',
+      setupRole:'ما الدور الذي تؤديه؟', setupReady:'النص جاهز', allScript:'النص كاملًا',
+      noteSpeakers:(src,t,k)=>`${src}عدد المقاطع: ${t}، عدد المتحدثين: ${k}. تظهر مقاطع الآخرين كإشارات.`,
+      noteNone:(src,t)=>`${src}عدد المقاطع: ${t}. لم يُعثر على أسماء متحدثين: كل فقرة مقطع عليك قوله.`,
+      more:n=>`… و${n} أخرى`,
+      errNoLines:'لم يُعثر على أي مقطع في هذا المستند. تحقّق من أنه يحتوي على نص.',
+      errDoc:'لا يمكن قراءة ملفات ‎.doc القديمة. افتح الملف في Word واحفظه بصيغة ‎.docx.',
+      errNotDocx:'هذا الملف ليس مستند Word بصيغة ‎.docx.',
+      errMammoth:'تعذّر تحميل قارئ ملفات Word. تحقّق من اتصالك أو الصق النص.',
+      errRead:'تعذّرت قراءة هذا الملف. قد يكون محميًا أو تالفًا.',
+      errRoleEmpty:'لا توجد مقاطع لهذا الدور.',
+      srFramed:'التعرّف على الكلام غير متاح في هذه النافذة. نزّل الملف وافتحه في Chrome أو Edge أو Safari.',
+      srNone:'هذا المتصفح لا يدعم التعرّف على الكلام. استخدم Chrome أو Edge أو Safari، أو تنقّل بالأزرار.',
+      micFramed:'لا يمكن تشغيل الميكروفون في هذه النافذة المضمّنة. نزّل الملف وافتحه مباشرة في Chrome أو Edge أو Safari.',
+      micBlocked:'الميكروفون محظور. اسمح به في المتصفح (الأيقونة بجانب العنوان)، ثم اضغط على الميكروفون مجددًا.',
+      noMic:'لم يُعثر على ميكروفون. وصّل ميكروفونًا وحاول مجددًا.',
+      network:'يحتاج التعرّف على الكلام إلى اتصال بالإنترنت. تحقّق من اتصالك.',
+      yourTurn:'دورك…', micOff:'الميكروفون متوقف', micOnLabel:'إيقاف الميكروفون', micOffLabel:'تشغيل الميكروفون',
+      quote:t=>`«${t}»`, skipped:'تم تخطّيه · ', pct:n=>`${n}٪`,
+      endNote:(g,t)=>`تم تأكيد ${g} من أصل ${t} بالصوت.`,
+      demoName:'مثال',
+      demoText:`ليلى: صباح الخير جميعًا، وشكرًا لحضوركم.
+مروان: سنعرض عليكم اليوم نتائج هذا الربع.
+ليلى: ارتفعت مبيعاتنا بنسبة اثني عشر بالمئة مقارنة بالعام الماضي.
+(مروان يعرض الرسم البياني)
+مروان: يأتي هذا النمو أساسًا من عملائنا الجدد في أوروبا.
+ليلى: وهذه مجرد البداية: ثلاثة إطلاقات مخطط لها قبل نهاية العام.
+مروان: سنجيب عن أسئلتكم في نهاية العرض.
+ليلى: شكرًا، والآن إلى الأرقام.`, demoSpeech:'ar-SA'
+    }
+
+  };
+  const browserLangs = () => (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']).map(l => l.toLowerCase());
+  const detectUi = () => { for (const l of browserLangs()){ if (I18N[l.slice(0,2)]) return l.slice(0,2); } return 'en'; };
+  function detectSpeech(){
+    const opts = [...$('lang').options].map(o => o.value);
+    for (const l of browserLangs()){
+      const exact = opts.find(o => o.toLowerCase() === l);
+      if (exact) return exact;
+      const same = opts.find(o => o.slice(0,2) === l.slice(0,2));
+      if (same) return same;
+    }
+    return t('demoSpeech');
+  }
+  let ui = store.get('ui', null) || detectUi();
+  if (!I18N[ui]) ui = 'en';
+  function t(k, ...a){ const v = I18N[ui][k] ?? I18N.en[k] ?? k; return typeof v === 'function' ? v(...a) : v; }
+  function applyStatic(){
+    document.documentElement.lang = ui;
+    document.title = 'v3rbatim — ' + t('tagline');
+    document.documentElement.dir = ui === 'ar' ? 'rtl' : 'ltr';
+    document.querySelectorAll('[data-i18n]').forEach(el => el.textContent = t(el.dataset.i18n));
+    document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    // libellés des langues parlées dans la langue de l'interface
+    let dn = null; try { dn = new Intl.DisplayNames([ui], {type:'language'}); } catch {}
+    [...$('lang').options].forEach(o => { const n = dn ? dn.of(o.value) : o.value; o.textContent = n.charAt(0).toUpperCase() + n.slice(1); });
+    thrLabel();
+  }
+  $('lang').value = store.get('lang', null) || detectSpeech();
+  $('uiLang').value = ui;
+  applyStatic();
+  $('uiLang').onchange = () => {
+    ui = $('uiLang').value; store.set('ui', ui); applyStatic(); renderResume();
+    if (!$('screenSetup').hidden) renderSetup();
+    if (state.running && current){ refreshRunTexts(); }
+    if (!$('screenEnd').hidden) finish();
+    if (!$('micErr').hidden && lastMicErr) $('micErr').textContent = t(lastMicErr);
+    if (!$('loadErr').hidden && lastLoadErr) $('loadErr').textContent = t(lastLoadErr);
+  };
+  $('thr').oninput = () => { thrLabel(); store.set('thr', +$('thr').value); };
+  $('lang').onchange = () => {
+    store.set('lang', $('lang').value);
+    // Avec le script d'exemple, on bascule sur sa version dans la langue parlée choisie.
+    const key = $('lang').value.slice(0,2);
+    if (state.isDemo && I18N[key] && !$('screenSetup').hidden){
+      const roleIdx = state.role === '*' ? -1 : state.speakers.findIndex(sp => sp[0] === state.role);
+      loadText(I18N[key].demoText, t('demoName'), true);
+      if (state.role !== '*' && roleIdx >= 0 && state.speakers[roleIdx]){
+        state.role = state.speakers[roleIdx][0]; store.set('role', state.role); renderSetup();
+      }
+    }
+  };
+  $('mask').onchange = () => { store.set('mask', $('mask').checked); if (state.running) renderWords(); };
+  $('auto').onchange = () => store.set('auto', $('auto').checked);
+
+  /* ---------- Écrans ---------- */
+  const screens = ['screenLoad','screenSetup','screenRun','screenEnd','screenPrompt'];
+  function show(id){
+    screens.forEach(s => $(s).hidden = s !== id);
+    $('newScript').hidden = id === 'screenLoad';
+    document.querySelector('header').hidden = id === 'screenPrompt';
+    document.body.classList.toggle('prompting', id === 'screenPrompt');
+    if (id === 'screenLoad' && typeof renderResume === 'function') renderResume();
+    window.scrollTo(0,0);
+  }
+
+  /* ---------- Analyse du script ---------- */
+  const isDirection = t => /^\s*[\(\[].*[\)\]]\s*$/.test(t);
+  const colonRe = /^\s*(\p{L}[\p{L}\p{M}0-9'’ .\-]{0,28}?)\s*[:：]\s+(.+)$/u;
+  const isUpperName = t => {
+    const s = t.trim().replace(/[:：.]$/, '');
+    return s.length >= 2 && s.length <= 30 && /[A-ZÀ-Ý]/.test(s) && s === s.toUpperCase()
+      && !/[.!?…,;]/.test(s) && s.split(/\s+/).length <= 4;
+  };
+  const cleanName = n => n.trim().replace(/\s+/g,' ').toUpperCase();
+
+  function parseScript(raw){
+    const paras = raw.split(/\r?\n/).map(p => p.replace(/\u00a0/g,' ').trim()).filter(Boolean);
+    const items = [];
+    let current = null;
+    for (const p of paras){
+      if (isDirection(p)){ items.push({type:'dir', speaker:null, text:p}); continue; }
+      const m = p.match(colonRe);
+      // "NOM : texte" — on n'accepte que des noms courts, pour éviter les phrases contenant ":"
+      if (m && m[1].split(/\s+/).length <= 4 && (m[1] === m[1].toUpperCase() || /^\p{Lu}/u.test(m[1]))){
+        current = cleanName(m[1]);
+        items.push({type:'line', speaker:current, text:m[2].trim()});
+        continue;
+      }
+      if (isUpperName(p)){ current = cleanName(p); continue; }
+      items.push({type:'line', speaker:current, text:p});
+    }
+    return items;
+  }
+
+  /* ---------- Normalisation / correspondance ---------- */
+  const norm = w => w.toLowerCase().normalize('NFD').replace(/\p{M}/gu,'')
+    .replace(/[’'`\u0640]/g,'').replace(/œ/g,'oe').replace(/æ/g,'ae').replace(/ß/g,'ss')
+    .replace(/[أإآٱ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/ؤ/g,'و').replace(/ئ/g,'ي')
+    .replace(/[^\p{L}\p{N}]/gu,'');
+
+  function tokenize(text){
+    const tokens = [];
+    let depth = 0;
+    for (const part of text.split(/(\s+)/)){
+      if (!part) continue;
+      if (/^\s+$/.test(part)){ tokens.push({space:part}); continue; }
+      const opens = (part.match(/[\(\[]/g)||[]).length, closes = (part.match(/[\)\]]/g)||[]).length;
+      const inside = depth > 0 || opens > 0;
+      depth = Math.max(0, depth + opens - closes);
+      const n = norm(part);
+      tokens.push({text:part, n, skip: inside || !n});
+    }
+    return tokens;
+  }
+
+  function lev(a,b){
+    const m=a.length,n=b.length; if(!m) return n; if(!n) return m;
+    let prev = Array.from({length:n+1},(_,i)=>i);
+    for(let i=1;i<=m;i++){
+      const cur=[i];
+      for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+      prev=cur;
+    }
+    return prev[n];
+  }
+  function similar(a,b){
+    if (a === b) return true;
+    if (a.length < 3 || b.length < 3) return false;
+    if (a.length >= 5 && b.length >= 5 && (a.startsWith(b) || b.startsWith(a))) return true;
+    return 1 - lev(a,b)/Math.max(a.length,b.length) >= 0.72;
+  }
+
+  // Aligne ce qui a été entendu sur le texte attendu, dans l'ordre, avec une fenêtre de tolérance.
+  function align(tokens, heardText){
+    const idx = tokens.map((t,i)=>i).filter(i => !tokens[i].space && !tokens[i].skip);
+    const heard = heardText.split(/\s+/).map(norm).filter(Boolean);
+    const matched = new Set();
+    let pos = 0; // position dans idx
+    for (let h = 0; h < heard.length; h++){
+      const w = heard[h];
+      for (let k = pos; k < Math.min(pos + 6, idx.length); k++){
+        const t = tokens[idx[k]].n;
+        // mots collés par la reconnaissance ("aujourdhui" vs "aujourd'hui") ou séparés
+        const joined = h+1 < heard.length ? w + heard[h+1] : null;
+        if (similar(w, t)){ matched.add(idx[k]); pos = k+1; break; }
+        if (joined && joined === t){ matched.add(idx[k]); pos = k+1; h++; break; }
+        if (k+1 < idx.length && w === t + tokens[idx[k+1]].n){ matched.add(idx[k]); matched.add(idx[k+1]); pos = k+2; break; }
+      }
+    }
+    const total = idx.length || 1;
+    const score = matched.size / total;
+    const tail = idx.slice(-2);
+    const reachedEnd = idx.length === 0 || tail.some(i => matched.has(i));
+    return { matched, pos, idx, score, reachedEnd };
+  }
+
+  /* ---------- État ---------- */
+  const state = { items:[], speakers:[], role:null, steps:[], i:0, results:[], running:false, peekCount:0 };
+  let current = null; // {tokens, align}
+
+  function buildSteps(){
+    const steps = [];
+    let cues = [];
+    for (const it of state.items){
+      const mine = it.type === 'line' && (state.role === '*' || it.speaker === state.role);
+      if (mine){ steps.push({item:it, cues:cues.slice(-3)}); cues = []; }
+      else cues.push(it);
+    }
+    return steps;
+  }
+
+  function loadText(raw, sourceName, isDemo){
+    state.isDemo = !!isDemo;
+    const items = parseScript(raw);
+    if (!items.some(i => i.type === 'line')){ showLoadErr('errNoLines'); return; }
+    state.items = items;
+    if (raw.length < 400000) store.set('last', {raw, name: sourceName || '', demo: !!isDemo});
+    const counts = {};
+    items.forEach(i => { if (i.type==='line' && i.speaker) counts[i.speaker] = (counts[i.speaker]||0)+1; });
+    state.speakers = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+    state.total = items.filter(i=>i.type==='line').length;
+    state.srcName = sourceName;
+    const saved = store.get('role', null);
+    state.role = state.speakers.length ? (saved === '*' || state.speakers.some(s=>s[0]===saved) ? saved : state.speakers[0][0]) : '*';
+    renderSetup();
+    $('loadErr').hidden = true;
+    show('screenSetup');
+  }
+
+  function renderSetup(){
+    const items = state.items, total = state.total, src = state.srcName ? state.srcName + t('sep') : '';
+    const box = $('speakers'); box.innerHTML = '';
+    if (state.speakers.length >= 1){
+      $('setupTitle').textContent = t('setupRole');
+      $('setupNote').textContent = t('noteSpeakers', src, total, state.speakers.length);
+      for (const [name, n] of [...state.speakers, ['*', total]]){
+        const b = document.createElement('button');
+        b.className = 'chip'; b.setAttribute('aria-pressed', String(name === state.role));
+        b.innerHTML = `${name === '*' ? esc(t('allScript')) : esc(name)}<span>${n}</span>`;
+        b.onclick = () => { state.role = name; store.set('role', name); [...box.children].forEach(c => c.setAttribute('aria-pressed', String(c === b))); };
+        box.appendChild(b);
+      }
+    } else {
+      $('setupTitle').textContent = t('setupReady');
+      $('setupNote').textContent = t('noteNone', src, total);
+    }
+    $('preview').innerHTML = items.slice(0, 40).map(i =>
+      i.type === 'dir' ? `<p dir="auto"><em>${esc(i.text)}</em></p>` : `<p dir="auto">${i.speaker ? `<b>${esc(i.speaker)}</b> ` : ''}${esc(i.text)}</p>`
+    ).join('') + (items.length > 40 ? `<p>${esc(t('more', items.length-40))}</p>` : '');
+  }
+
+  const esc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  let lastLoadErr = null;
+  function showLoadErr(k){ lastLoadErr = k; $('loadErr').textContent = t(k); $('loadErr').hidden = false; }
+
+  async function loadFile(file){
+    if (!file) return;
+    if (!/\.docx$/i.test(file.name)){
+      showLoadErr(/\.doc$/i.test(file.name)
+? 'errDoc' : 'errNotDocx');
+      return;
+    }
+    if (!window.mammoth){ showLoadErr('errMammoth'); return; }
+    try {
+      const buf = await file.arrayBuffer();
+      const res = await mammoth.extractRawText({arrayBuffer: buf});
+      loadText(res.value, file.name.replace(/\.docx$/i,''));
+    } catch (e){
+      showLoadErr('errRead');
+    }
+  }
+
+  $('file').onchange = e => loadFile(e.target.files[0]);
+  const drop = $('drop');
+  ['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+  ['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+  drop.addEventListener('drop', e => loadFile(e.dataTransfer.files[0]));
+  $('showPaste').onclick = () => { $('pasteBox').hidden = false; $('pasteText').focus(); };
+  $('usePaste').onclick = () => { const t = $('pasteText').value.trim(); if (t) loadText(t, ''); };
+  $('demo').onclick = () => { if ($('lang').value.slice(0,2) !== t('demoSpeech').slice(0,2)) $('lang').value = t('demoSpeech'); store.set('lang', $('lang').value); loadText(t('demoText'), t('demoName'), true); };
+  $('newScript').onclick = () => { P.on = false; stopMic(); awakeOff(); state.running = false; $('file').value = ''; show('screenLoad'); };
+
+  /* ---------- Répétition ---------- */
+  $('start').onclick = () => startRun();
+  function startRun(onlyIdx){
+    let steps = buildSteps();
+    if (onlyIdx) steps = onlyIdx.map(i => state.steps[i]);
+    if (!steps.length){ alert(t('errRoleEmpty')); return; }
+    state.steps = steps; state.results = steps.map(() => null); state.i = 0; state.running = true;
+    show('screenRun');
+    awakeOn();
+    if (!SR){
+      showMicErr(window.self !== window.top ? 'srFramed' : 'srNone'); $('mic').disabled = true;
+    }
+    loadStep();
+    if (SR) startMic();
+  }
+
+  function loadStep(keep){
+    const step = state.steps[state.i];
+    const n = state.steps.length;
+    $('count').textContent = `${state.i+1} / ${n}`;
+    $('progress').style.width = (state.i / n * 100) + '%';
+    $('cues').innerHTML = step.cues.map(c => c.type === 'dir'
+      ? `<p class="cue dir" dir="auto">${esc(c.text)}</p>`
+      : `<p class="cue" dir="auto">${c.speaker ? `<b>${esc(c.speaker)}</b>` : ''}${esc(c.text)}</p>`).join('');
+    $('who').textContent = step.item.speaker ? step.item.speaker : '';
+    $('who').hidden = !step.item.speaker;
+    current = { tokens: tokenize(step.item.text), advancing:false };
+    state.peekCount = 0;
+    if (!keep) resetHearing();
+    $('stage').classList.remove('done');
+    update(keep ? stepText : '');
+    $('prev').disabled = state.i === 0;
+    refreshRunTexts();
+  }
+
+  function refreshRunTexts(){
+    $('next').textContent = state.i === state.steps.length-1 ? t('finish') : t('next');
+    $('pct').textContent = t('pct', Math.round((current && current.align ? current.align.score : 0) * 100));
+    setHeard(stepText);
+    setMicUI();
+  }
+  function setHeard(txt){
+    $('heard').textContent = txt && txt.trim() ? t('quote', txt.trim()) : (micOn ? t('yourTurn') : (SR ? t('micOff') : ''));
+  }
+
+  function renderWords(){
+    const a = current.align;
+    const nextIdx = a.idx[a.pos];
+    const peekSet = new Set(a.idx.slice(a.pos, a.pos + state.peekCount));
+    $('lineText').classList.toggle('masked', $('mask').checked);
+    $('lineText').innerHTML = current.tokens.map((t, i) => {
+      if (t.space) return t.space;
+      let cls = 'w';
+      if (t.skip) cls += ' skip';
+      else if (a.matched.has(i)) cls += ' ok';
+      else if (a.idx.indexOf(i) > -1 && a.idx.indexOf(i) < a.pos) cls += ' miss';
+      else if (i === nextIdx && !$('mask').checked) cls += ' next';
+      if (peekSet.has(i)) cls += ' peek';
+      return `<span class="${cls}">${esc(t.text)}</span>`;
+    }).join('');
+  }
+
+  function update(heardText){
+    current.align = align(current.tokens, heardText);
+    renderWords();
+    const pct = Math.round(current.align.score * 100);
+    $('pct').textContent = t('pct', pct);
+    $('lineBar').style.width = pct + '%';
+    setHeard(heardText);
+    const thr = +$('thr').value / 100;
+    const ok = (current.align.score >= thr && current.align.reachedEnd) || current.align.score >= 0.97;
+    if (ok && !current.advancing){
+      $('stage').classList.add('done');
+      state.results[state.i] = {score: current.align.score, manual:false};
+      if ($('auto').checked){
+        current.advancing = true;
+        resetHearing(); // tout ce qui est dit à partir de maintenant compte pour la réplique suivante
+        setTimeout(() => { if (state.running) go(1, true); }, 350);
+      }
+    }
+  }
+
+  function go(dir, fromAuto){
+    if (!fromAuto && dir > 0 && !state.results[state.i])
+      state.results[state.i] = {score: current.align ? current.align.score : 0, manual:true};
+    const ni = state.i + dir;
+    if (ni < 0) return;
+    if (ni >= state.steps.length){ finish(); return; }
+    state.i = ni; loadStep(fromAuto);
+  }
+
+  // Quitter la répétition : retour aux réglages, en gardant le script et le rôle choisis.
+  function exitRun(){
+    state.running = false; stopMic(); awakeOff();
+    $('micErr').hidden = true;
+    show('screenSetup');
+  }
+  $('exitRun').onclick = () => exitRun();
+
+  function finish(){
+    state.running = false; stopMic(); awakeOff();
+    $('progress').style.width = '100%';
+    const thr = +$('thr').value / 100;
+    const list = $('summary'); list.innerHTML = '';
+    let good = 0;
+    state.steps.forEach((s, i) => {
+      const r = state.results[i];
+      const sc = r ? Math.round(r.score*100) : 0;
+      const passed = r && !r.manual && r.score >= thr;
+      if (passed) good++;
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="t" dir="auto">${esc(s.item.text)}</span><span class="s ${passed?'good':'low'}">${r && r.manual ? esc(t('skipped')) : ''}${t('pct', sc)}</span>`;
+      list.appendChild(li);
+    });
+    $('endNote').textContent = t('endNote', good, state.steps.length);
+    $('onlyWeak').hidden = good === state.steps.length;
+    state.weak = state.steps.map((s,i)=>i).filter(i => { const r = state.results[i]; return !(r && !r.manual && r.score >= thr); });
+    show('screenEnd');
+  }
+  $('again').onclick = () => startRun();
+  $('toSetup').onclick = () => show('screenSetup');
+  $('onlyWeak').onclick = () => { const base = state.steps; const weak = state.weak; state.steps = base; startRun(weak); };
+
+  $('prev').onclick = () => go(-1);
+  $('next').onclick = () => go(1);
+  $('retry').onclick = () => { resetHearing(); current.advancing = false; state.results[state.i] = null; $('stage').classList.remove('done'); state.peekCount = 0; update(''); };
+  $('peek').onclick = () => { state.peekCount++; renderWords(); };
+
+  document.addEventListener('keydown', e => {
+    if (P.on || !state.running || /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.key === 'Escape'){ e.preventDefault(); exitRun(); }
+    else if (e.key === 'ArrowRight'){ e.preventDefault(); go(1); }
+    else if (e.key === 'ArrowLeft'){ e.preventDefault(); go(-1); }
+    else if (e.key === ' '){ e.preventDefault(); micOn ? stopMic() : startMic(); }
+    else if (e.key.toLowerCase() === 'r') $('retry').click();
+    else if (e.key.toLowerCase() === 's') $('peek').click();
+  });
+
+  /* ---------- Micro ---------- */
+  let rec = null, micOn = false, base = 0, skipWords = 0, carry = '', stepText = '';
+  let snap = []; // dernier état connu des résultats : [{t, final}]
+  const words = t => t.trim().split(/\s+/).filter(Boolean);
+  // Pose la frontière : la phrase en cours de reconnaissance peut contenir la fin de la réplique
+  // précédente ET le début de la suivante, on ne jette donc que les mots déjà entendus.
+  function resetHearing(){
+    carry = ''; stepText = '';
+    const last = snap[snap.length - 1];
+    if (last && !last.final){ base = snap.length - 1; skipWords = words(last.t).length; }
+    else { base = snap.length; skipWords = 0; }
+  }
+
+  function startMic(){
+    if (!SR) return;
+    $('micErr').hidden = true;
+    if (!rec){
+      rec = new SR();
+      rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+      rec.onstart = () => { started = true; clearTimeout(watchdog); base = 0; skipWords = 0; snap = []; P.base = 0; P.skip = 0; };
+      rec.onresult = e => {
+        snap = Array.from(e.results, r => ({t: r[0].transcript, final: r.isFinal}));
+        let t = '';
+        for (let i = Math.max(base, 0); i < snap.length; i++){
+          t += (i === base && skipWords ? words(snap[i].t).slice(skipWords).join(' ') : snap[i].t) + ' ';
+        }
+        stepText = (carry + ' ' + t).trim();
+        if (state.running && current && !current.advancing) update(stepText);
+        if (P.on) promptHeard();
+      };
+      rec.onerror = e => {
+        if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+          micOn = false; setMicUI(); clearTimeout(watchdog);
+          micBlocked();
+        } else if (e.error === 'audio-capture'){
+          micOn = false; setMicUI(); showMicErr('noMic');
+        } else if (e.error === 'network'){
+          showMicErr('network');
+        }
+      };
+      rec.onend = () => {
+        carry = stepText; // on garde ce qui a déjà été dit pour cette réplique
+        if (P.on) P.prevTail = P.lastTail.slice();
+        if (micOn) { try { rec.start(); } catch { setTimeout(() => { try { rec.start(); } catch {} }, 100); } }
+        else setMicUI();
+      };
+    }
+    rec.lang = $('lang').value;
+    micOn = true; setMicUI();
+    started = false;
+    try { rec.start(); } catch {}
+    clearTimeout(watchdog);
+    watchdog = setTimeout(() => {
+      if (!started && micOn){
+        micOn = false; setMicUI();
+        micBlocked();
+      }
+    }, 4000);
+  }
+  let started = false, watchdog = null, lastMicErr = null;
+  function showMicErr(k){ lastMicErr = k; $('micErr').textContent = t(k); $('micErr').hidden = false; if (P.on){ $('pErr').textContent = t(k); $('pErr').hidden = false; } }
+  function micBlocked(){
+    showMicErr(window.self !== window.top ? 'micFramed' : 'micBlocked');
+  }
+  function stopMic(){ micOn = false; setMicUI(); if (rec) try { rec.stop(); } catch {} }
+  function setMicUI(){
+    $('mic').classList.toggle('on', micOn);
+    $('mic').setAttribute('aria-label', micOn ? t('micOnLabel') : t('micOffLabel'));
+    if (current && state.running && !stepText) setHeard('');
+    $('pMic').classList.toggle('on', micOn);
+    $('pMic').setAttribute('aria-label', micOn ? t('micOnLabel') : t('micOffLabel'));
+    $('pStatus').textContent = (micOn ? t('listening') : t('paused')) + ' · ' + t('tapHint');
+  }
+  $('mic').onclick = () => micOn ? stopMic() : startMic();
+
+  /* ---------- Mode prompteur ---------- */
+  const P = { on:false, words:[], paras:[], p:0, prevTail:[], lastTail:[], base:0, skip:0,
+              scale: store.get('pscale', 1), userScrollUntil:0, wake:null };
+  const reduced = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function openPrompter(){
+    const box = $('ptext'); box.innerHTML = '';
+    P.words = []; P.paras = [];
+    let prevSpeaker = null;
+    state.items.forEach(it => {
+      const el = document.createElement('p');
+      const pi = P.paras.length;
+      el.className = 'pp' + (it.type === 'dir' ? ' dir' : '') +
+        (it.type === 'line' && state.role !== '*' && it.speaker && it.speaker !== state.role ? ' other' : '');
+      el.dir = 'auto'; el.dataset.pi = pi;
+      if (it.type === 'line' && it.speaker && state.speakers.length > 1 && it.speaker !== prevSpeaker){
+        const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = it.speaker; el.appendChild(nm);
+      }
+      if (it.type === 'line') prevSpeaker = it.speaker;
+      const first = P.words.length;
+      for (const tk of tokenize(it.text)){
+        if (tk.space){ el.appendChild(document.createTextNode(tk.space)); continue; }
+        const sp = document.createElement('span'); sp.textContent = tk.text;
+        if (it.type === 'line' && !tk.skip){ sp.dataset.g = P.words.length; P.words.push({n: tk.n, el: sp, pi}); }
+        el.appendChild(sp);
+      }
+      P.paras.push({el, first, last: P.words.length - 1});
+      box.appendChild(el);
+    });
+    box.style.setProperty('--ps', P.scale);
+    P.p = -1; P.prevTail = []; P.lastTail = []; P.base = snap.length; P.skip = 0;
+    P.on = true; state.running = false;
+    $('pErr').hidden = true;
+    show('screenPrompt');
+    setPos(0, true);
+    awakeOn();
+    if (SR) startMic(); else showMicErr(window.self !== window.top ? 'srFramed' : 'srNone');
+    setMicUI();
+  }
+
+  function closePrompter(){
+    P.on = false; stopMic(); awakeOff();
+    show('screenSetup');
+  }
+
+  function setPos(np, instant){
+    const W = P.words, n = W.length;
+    np = Math.max(0, Math.min(np, n));
+    const old = P.p < 0 ? 0 : P.p;
+    if (P.p < 0) W.forEach(w => w.el.classList.remove('said','at'));
+    const lo = Math.min(old, np), hi = Math.max(old, np);
+    for (let i = lo; i < hi && i < n; i++) W[i].el.classList.toggle('said', i < np);
+    if (W[old]) W[old].el.classList.remove('at');
+    if (W[np]) W[np].el.classList.add('at');
+    P.p = np;
+    const cp = np < n ? W[np].pi : P.paras.length - 1;
+    P.paras.forEach((pa, i) => { pa.el.classList.toggle('past', i < cp); pa.el.classList.toggle('cur', i === cp); });
+    scrollToPos(instant);
+  }
+
+  function scrollToPos(instant){
+    if (!instant && Date.now() < P.userScrollUntil) return;
+    const sc = $('pscroll');
+    const target = P.words[P.p] ? P.words[P.p].el : (P.paras[P.paras.length-1] || {}).el;
+    if (!target) return;
+    const top = target.getBoundingClientRect().top - sc.getBoundingClientRect().top + sc.scrollTop;
+    const want = Math.max(0, top - sc.clientHeight * 0.3);
+    if (Math.abs(want - sc.scrollTop) > 6) sc.scrollTo({top: want, behavior: instant || reduced() ? 'auto' : 'smooth'});
+  }
+
+  // Aligne les derniers mots entendus en remontant depuis la position e du script.
+  function scoreAt(tail, e){
+    const W = P.words;
+    let i = tail.length - 1, j = e, score = 0, long = false, misses = 0;
+    if (!similar(tail[i], W[j].n)) return null;
+    while (i >= 0 && j >= 0 && misses <= 3){
+      if (similar(tail[i], W[j].n)){ score++; if (W[j].n.length >= 4) long = true; i--; j--; continue; }
+      if (j > 0 && similar(tail[i], W[j-1].n)){ j--; misses++; continue; }
+      if (i > 0 && similar(tail[i-1], W[j].n)){ i--; misses++; continue; }
+      i--; j--; misses++;
+    }
+    return {score, long};
+  }
+
+  function locate(tail){
+    if (tail.length < 2 || !P.words.length) return null;
+    const p = P.p;
+    let best = null;
+    for (let e = 0; e < P.words.length; e++){
+      const r = scoreAt(tail, e);
+      if (!r || !r.long) continue;
+      const d = e - p;
+      const near = d >= -1 && d <= 40;
+      const need = near ? 2 : (d < -1 ? 5 : 4); // on n'avance que sur une correspondance solide, on recule encore moins
+      if (r.score < need) continue;
+      const val = r.score - (near ? 0 : 1.5);
+      if (!best || val > best.val) best = {e, val};
+    }
+    return best;
+  }
+
+  function promptHeard(){
+    let txt = '';
+    for (let i = Math.max(P.base, snap.length - 3); i < snap.length; i++){
+      txt += (i === P.base && P.skip ? words(snap[i].t).slice(P.skip).join(' ') : snap[i].t) + ' ';
+    }
+    const hw = txt.split(/\s+/).map(norm).filter(Boolean);
+    const tail = P.prevTail.concat(hw).slice(-10);
+    P.lastTail = tail;
+    const best = locate(tail);
+    if (best && best.e + 1 !== P.p) setPos(best.e + 1);
+  }
+
+  function barrier(){ // ce qui a été dit avant un repositionnement manuel ne compte plus
+    P.prevTail = []; P.lastTail = [];
+    const last = snap[snap.length - 1];
+    if (last && !last.final){ P.base = snap.length - 1; P.skip = words(last.t).length; }
+    else { P.base = snap.length; P.skip = 0; }
+  }
+
+  $('ptext').addEventListener('click', e => {
+    const w = e.target.closest('[data-g]');
+    let g = w ? +w.dataset.g : null;
+    if (g === null){
+      const para = e.target.closest('.pp');
+      if (!para) return;
+      const pi = +para.dataset.pi;
+      const pa = P.paras.slice(pi).find(x => x.last >= x.first);
+      g = pa ? pa.first : P.words.length;
+    }
+    barrier(); P.userScrollUntil = 0; setPos(g);
+  });
+  const userScroll = () => { P.userScrollUntil = Date.now() + 4000; };
+  $('pscroll').addEventListener('touchmove', userScroll, {passive:true});
+  $('pscroll').addEventListener('wheel', userScroll, {passive:true});
+
+  function jumpPara(dir){
+    const W = P.words; const cp = W[P.p] ? W[P.p].pi : P.paras.length - 1;
+    let i = cp + dir;
+    while (i >= 0 && i < P.paras.length && P.paras[i].last < P.paras[i].first) i += dir;
+    if (i < 0 || i >= P.paras.length) return;
+    barrier(); P.userScrollUntil = 0; setPos(P.paras[i].first);
+  }
+  function setScale(d){
+    P.scale = Math.round(Math.max(0.7, Math.min(1.8, P.scale + d)) * 10) / 10;
+    store.set('pscale', P.scale);
+    $('ptext').style.setProperty('--ps', P.scale);
+    scrollToPos(true);
+  }
+  $('prompt').onclick = () => openPrompter();
+  $('pExit').onclick = () => closePrompter();
+  $('pSmaller').onclick = () => setScale(-0.1);
+  $('pBigger').onclick = () => setScale(0.1);
+  $('pMic').onclick = () => micOn ? stopMic() : startMic();
+  $('pErr').onclick = () => { $('pErr').hidden = true; };
+  document.addEventListener('keydown', e => {
+    if (!P.on) return;
+    if (e.key === ' '){ e.preventDefault(); micOn ? stopMic() : startMic(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowRight' || e.key === 'PageDown'){ e.preventDefault(); jumpPara(1); }
+    else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft' || e.key === 'PageUp'){ e.preventDefault(); jumpPara(-1); }
+    else if (e.key === 'Escape') closePrompter();
+  });
+  window.addEventListener('resize', () => { if (P.on) scrollToPos(true); });
+
+  /* ---------- Dernier script ---------- */
+  function renderResume(){
+    const last = store.get('last', null);
+    $('resume').hidden = !last;
+    if (last) $('resume').textContent = t('resumeLast', last.name || t('lastScript'));
+  }
+  $('resume').onclick = () => { const last = store.get('last', null); if (last) loadText(last.raw, last.name, last.demo); };
+  renderResume();
+
+
+  /* ---------- Écran toujours allumé ----------
+     1) API Screen Wake Lock (Safari iOS 16.4+, Chrome, Edge).
+     2) Secours : une vidéo muette de quelques secondes lue en boucle, qui empêche la mise en veille
+        sur les iPhone plus anciens et dans les web-apps ajoutées à l'écran d'accueil.
+        (Vidéo issue de NoSleep.js, licence MIT.) */
+  const AWAKE_MP4 = 'data:video/mp4;base64,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';
+  const Awake = { want:false, lock:null, video:null, videoOn:false };
+  async function requestLock(){
+    if (!('wakeLock' in navigator) || document.visibilityState !== 'visible') return false;
+    try {
+      Awake.lock = await navigator.wakeLock.request('screen');
+      Awake.lock.addEventListener('release', () => { Awake.lock = null; });
+      return true;
+    } catch { return false; }
+  }
+  function startVideo(){
+    if (!Awake.video){
+      const v = document.createElement('video');
+      v.muted = true; v.loop = true; v.playsInline = true;
+      v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.setAttribute('aria-hidden','true');
+      v.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;left:0;top:0';
+      v.src = AWAKE_MP4;
+      document.body.appendChild(v);
+      Awake.video = v;
+    }
+    Awake.videoOn = true;
+    const pr = Awake.video.play();
+    if (pr && pr.catch) pr.catch(() => armGesture());
+  }
+  // Si la lecture est refusée hors geste, on la relance au prochain toucher.
+  function armGesture(){
+    const go = () => { document.removeEventListener('pointerdown', go, true); if (Awake.want && Awake.videoOn) { const pr = Awake.video.play(); if (pr && pr.catch) pr.catch(() => {}); } };
+    document.addEventListener('pointerdown', go, true);
+  }
+  function awakeOn(){ // à appeler depuis un geste (clic)
+    Awake.want = true;
+    const standaloneIOS = navigator.standalone === true;
+    if (!('wakeLock' in navigator) || standaloneIOS) startVideo(); // synchrone, pour rester dans le geste
+    requestLock().then(ok => { if (!ok && Awake.want && !Awake.videoOn) startVideo(); });
+  }
+  function awakeOff(){
+    Awake.want = false; Awake.videoOn = false;
+    try { Awake.lock && Awake.lock.release(); } catch {}
+    Awake.lock = null;
+    if (Awake.video) Awake.video.pause();
+  }
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !Awake.want) return;
+    requestLock();
+    if (Awake.videoOn && Awake.video){ const pr = Awake.video.play(); if (pr && pr.catch) pr.catch(() => armGesture()); }
+  });
+
+  /* ---------- Téléchargement de l'exemple au format Word ---------- */
+  // Petit générateur .docx autonome : un zip non compressé contenant le strict nécessaire.
+  const CRC_TABLE = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++){ let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+  const crc32 = b => { let c = 0xFFFFFFFF; for (let i = 0; i < b.length; i++) c = CRC_TABLE[(c ^ b[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; };
+  function makeZip(files){
+    const enc = new TextEncoder(), parts = [], central = [];
+    let offset = 0;
+    for (const [name, text] of files){
+      const nb = enc.encode(name), data = enc.encode(text), crc = crc32(data);
+      const h = new DataView(new ArrayBuffer(30));
+      h.setUint32(0, 0x04034b50, true); h.setUint16(4, 20, true); h.setUint16(6, 0x0800, true);
+      h.setUint32(14, crc, true); h.setUint32(18, data.length, true); h.setUint32(22, data.length, true); h.setUint16(26, nb.length, true);
+      parts.push(new Uint8Array(h.buffer), nb, data);
+      const c = new DataView(new ArrayBuffer(46));
+      c.setUint32(0, 0x02014b50, true); c.setUint16(4, 20, true); c.setUint16(6, 20, true); c.setUint16(8, 0x0800, true);
+      c.setUint32(16, crc, true); c.setUint32(20, data.length, true); c.setUint32(24, data.length, true); c.setUint16(28, nb.length, true);
+      c.setUint32(42, offset, true);
+      central.push(new Uint8Array(c.buffer), nb);
+      offset += 30 + nb.length + data.length;
+    }
+    const size = central.reduce((a, b) => a + b.length, 0);
+    const e = new DataView(new ArrayBuffer(22));
+    e.setUint32(0, 0x06054b50, true); e.setUint16(8, files.length, true); e.setUint16(10, files.length, true);
+    e.setUint32(12, size, true); e.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, new Uint8Array(e.buffer)], {type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  }
+  const xesc = s => s.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  function scriptToDocx(raw){
+    const paras = raw.split(/\r?\n/).filter(l => l.trim()).map(line => {
+      const rtl = /[\u0590-\u08FF]/.test(line);
+      const pPr = `<w:pPr><w:spacing w:after="160"/>${rtl ? '<w:bidi/>' : ''}</w:pPr>`;
+      const r = (txt, extra) => `<w:r><w:rPr>${extra || ''}${rtl ? '<w:rtl/>' : ''}</w:rPr><w:t xml:space="preserve">${xesc(txt)}</w:t></w:r>`;
+      if (isDirection(line)) return `<w:p>${pPr}${r(line, '<w:i/><w:color w:val="666666"/>')}</w:p>`;
+      const m = line.match(/^([^:：]{1,30})([:：]\s*)(.*)$/);
+      if (m) return `<w:p>${pPr}${r(m[1] + m[2].replace(/\s*$/, ' '), '<w:b/>')}${r(m[3])}</w:p>`;
+      return `<w:p>${pPr}${r(line)}</w:p>`;
+    }).join('');
+    return makeZip([
+      ['[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/></Types>'],
+      ['_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>'],
+      ['word/document.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:body>${paras}<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1417" w:right="1417" w:bottom="1417" w:left="1417" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr></w:body></w:document>`]
+    ]);
+  }
+  $('dlDemo').onclick = () => {
+    const blob = scriptToDocx(t('demoText'));
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `v3rbatim - ${t('demoName')}.docx`;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  };
+})();
+</script>
+</body>
+</html>
