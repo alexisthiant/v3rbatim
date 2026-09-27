@@ -34,8 +34,13 @@ Ready-made examples in every language are in the [`examples`](examples/) folder.
 | Browser | Works |
 | --- | --- |
 | Chrome, Edge (computer, Android) | ✅ |
-| Safari, Chrome (iPhone, iPad, Mac) | ✅ |
-| Firefox | ❌ no speech recognition |
+| Safari (Mac, iPhone, iPad) | ✅ |
+| Chrome (iPhone, iPad) | ✅ |
+| Samsung Internet (Android) | ✅ |
+| Firefox (all platforms) | ❌ speech recognition is disabled by Mozilla |
+| Opera, Brave, Vivaldi | ❌ no access to a speech recognition service |
+
+In unsupported browsers the app still opens and you can move through the lines with the buttons, but the microphone won't follow you.
 
 Speech recognition is provided by the browser itself and needs an internet connection. **Audio is processed by the browser vendor** (Google for Chrome, Apple for Safari). Keep this in mind for confidential content.
 
@@ -57,4 +62,4 @@ Open `index.html` in Chrome, Edge or Safari. Or host it for free on GitHub Pages
 - **Mode prompteur** : le texte défile tout seul en suivant ta voix, tolère les écarts et met en évidence les indications comme *(ouvrir le tableau de bord)*. Touche un passage pour t'y placer.
 - **8 langues d'interface**, choisies par défaut selon le navigateur, et une langue parlée réglable séparément.
 - **Format** : `NOM : texte`, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ne sont pas à dire. Exemples dans le dossier [`examples`](examples/).
-- **Navigateurs** : Chrome, Edge et Safari (y compris sur iPhone). Pas Firefox. La reconnaissance vocale est assurée par le navigateur (Google ou Apple) et nécessite Internet.
+- **Navigateurs** : Chrome, Edge, Safari (y compris sur iPhone et iPad) et Samsung Internet. Firefox, Opera, Brave et Vivaldi ne donnent pas accès à la reconnaissance vocale : l'appli s'ouvre, mais le micro ne suit pas. La reconnaissance vocale est assurée par le navigateur (Google ou Apple) et nécessite Internet.
