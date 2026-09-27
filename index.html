@@ -175,7 +175,7 @@ body.prompting{overflow:hidden}
       <p data-i18n="dropText">Tes répliques s’affichent une à une. Dis-les à voix haute : dès que c’est bon, on passe à la suivante.</p>
       <div class="row center">
         <label class="btn primary" for="file" data-i18n="chooseFile">Choisir un fichier .docx</label>
-        <input type="file" id="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+        <input type="file" id="file" accept=".docx,.odt,.pptx,.pdf,.txt,.md,.markdown,.rtf" hidden>
       </div>
       <div class="alt">
         <button class="link" id="showPaste" data-i18n="showPaste">Coller le texte à la place</button>
@@ -308,16 +308,17 @@ body.prompting{overflow:hidden}
   const pl = (n, one, many) => n > 1 ? many : one;
   const I18N = {
     fr: {
+      slideLabel:n=>`Diapositive ${n}`,
       toSetup:'Retour aux réglages',
       dlDemo:'Télécharger l’exemple (.docx)',
       prompt:'Mode prompteur', promptDesc:'Pour une démo : le texte défile tout seul en suivant ta voix, sans rien valider.', exit:'Quitter', smaller:'Réduire le texte', bigger:'Agrandir le texte', tapHint:'Touche un passage pour t’y placer', listening:'Écoute', paused:'En pause', resumeLast:n=>`Reprendre « ${n} »`, lastScript:'le dernier script',
       sep:' : ', tagline:'ton souffleur vocal', newScript:'Changer de script', uiLangLabel:'Langue de l’interface',
-      dropTitle:'Dépose ton script Word ici',
+      dropTitle:'Dépose ton script ici',
       dropText:'Tes répliques s’affichent une à une. Dis-les à voix haute : dès que c’est bon, on passe à la suivante.',
-      chooseFile:'Choisir un fichier .docx', showPaste:'Coller le texte à la place', demo:'Essayer avec un exemple',
+      chooseFile:'Choisir un fichier', showPaste:'Coller le texte à la place', demo:'Essayer avec un exemple',
       pastePh:'NOM : réplique\nAUTRE NOM : réplique…\n\nou simplement un paragraphe par réplique.',
       usePaste:'Utiliser ce texte',
-      formats:'Formats reconnus : « NOM : texte » sur une ligne, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ou crochets sont affichées mais pas à dire. Sans noms, chaque paragraphe est une réplique.',
+      formats:'Fichiers acceptés : Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, ce sont les notes du présentateur qui servent de script), PDF, texte (.txt), Markdown (.md) et RTF. Formats reconnus : « NOM : texte » sur une ligne, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ou crochets sont affichées mais pas à dire. Sans noms, chaque paragraphe est une réplique.',
       speechLang:'Langue parlée', thr:'Exigence', thrLabel:n=>`${n} % des mots`,
       mask:'Masquer le texte', maskHelp:'Les mots apparaissent au fur et à mesure que tu les dis',
       auto:'Passer automatiquement', autoHelp:'Désactive pour valider toi-même chaque réplique',
@@ -331,9 +332,9 @@ body.prompting{overflow:hidden}
       noteNone:(src,t)=>`${src}${t} ${pl(t,'réplique','répliques')}. Aucun nom d’intervenant détecté : chaque paragraphe est une réplique à dire.`,
       more:n=>`… et ${n} de plus`,
       errNoLines:'Aucune réplique trouvée dans ce document. Vérifie qu’il contient du texte.',
-      errDoc:'Les fichiers .doc (ancien format Word) ne sont pas lus. Ouvre-le dans Word et enregistre-le en .docx.',
-      errNotDocx:'Ce fichier n’est pas un document Word .docx.',
-      errMammoth:'Le lecteur de fichiers Word n’a pas pu se charger. Vérifie ta connexion, ou colle le texte à la place.',
+      errDoc:'Les anciens formats .doc et .ppt ne sont pas lus. Ouvre le fichier et enregistre-le en .docx ou .pptx.',
+      errNotDocx:'Ce format n’est pas pris en charge. Utilise un fichier .docx, .odt, .pptx, .pdf, .txt, .md ou .rtf.',
+      errMammoth:'Le lecteur de fichiers n’a pas pu se charger. Vérifie ta connexion, ou colle le texte à la place.',
       errRead:'Impossible de lire ce fichier. Il est peut-être protégé ou endommagé.',
       errRoleEmpty:'Ce rôle n’a aucune réplique.',
       srFramed:'La reconnaissance vocale n’est pas disponible dans cette fenêtre. Télécharge le fichier et ouvre-le dans Chrome, Edge ou Safari.',
@@ -356,16 +357,17 @@ MARC : Nous prendrons vos questions à la fin de la présentation.
 LÉA : Merci, et place aux chiffres.`, demoSpeech:'fr-FR'
     },
     en: {
+      slideLabel:n=>`Slide ${n}`,
       toSetup:'Back to settings',
       dlDemo:'Download the example (.docx)',
       prompt:'Teleprompter mode', promptDesc:'For demos: the text scrolls on its own as you speak, with no checking.', exit:'Exit', smaller:'Smaller text', bigger:'Larger text', tapHint:'Tap a passage to jump to it', listening:'Listening', paused:'Paused', resumeLast:n=>`Resume “${n}”`, lastScript:'last script',
       sep:': ', tagline:'your voice prompter', newScript:'Change script', uiLangLabel:'Interface language',
-      dropTitle:'Drop your Word script here',
+      dropTitle:'Drop your script here',
       dropText:'Your lines appear one at a time. Say them out loud: as soon as you get it right, you move on to the next one.',
-      chooseFile:'Choose a .docx file', showPaste:'Paste the text instead', demo:'Try an example',
+      chooseFile:'Choose a file', showPaste:'Paste the text instead', demo:'Try an example',
       pastePh:'NAME: line\nOTHER NAME: line…\n\nor just one paragraph per line.',
       usePaste:'Use this text',
-      formats:'Supported formats: “NAME: text” on one line, or the name alone in capitals followed by the line. Directions in parentheses or brackets are shown but not spoken. With no names, each paragraph is a line.',
+      formats:'Accepted files: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, the speaker notes are used as the script), PDF, plain text (.txt), Markdown (.md) and RTF. Supported layouts: “NAME: text” on one line, or the name alone in capitals followed by the line. Directions in parentheses or brackets are shown but not spoken. With no names, each paragraph is a line.',
       speechLang:'Spoken language', thr:'Strictness', thrLabel:n=>`${n}% of words`,
       mask:'Hide the text', maskHelp:'Words appear as you say them',
       auto:'Move on automatically', autoHelp:'Turn off to confirm each line yourself',
@@ -379,9 +381,9 @@ LÉA : Merci, et place aux chiffres.`, demoSpeech:'fr-FR'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'line','lines')}. No speaker names found: each paragraph is a line to say.`,
       more:n=>`… and ${n} more`,
       errNoLines:'No lines found in this document. Check that it contains text.',
-      errDoc:'Old .doc files can’t be read. Open it in Word and save it as .docx.',
-      errNotDocx:'This file isn’t a Word .docx document.',
-      errMammoth:'The Word file reader couldn’t load. Check your connection, or paste the text instead.',
+      errDoc:'Old .doc and .ppt files can’t be read. Open the file and save it as .docx or .pptx.',
+      errNotDocx:'This format isn’t supported. Use a .docx, .odt, .pptx, .pdf, .txt, .md or .rtf file.',
+      errMammoth:'The file reader couldn’t load. Check your connection, or paste the text instead.',
       errRead:'This file can’t be read. It may be protected or damaged.',
       errRoleEmpty:'This part has no lines.',
       srFramed:'Speech recognition isn’t available in this window. Download the file and open it in Chrome, Edge or Safari.',
@@ -404,16 +406,17 @@ MARK: We will take your questions at the end of the presentation.
 LEA: Thank you, and now over to the numbers.`, demoSpeech:'en-US'
     },
     es: {
+      slideLabel:n=>`Diapositiva ${n}`,
       toSetup:'Volver a los ajustes',
       dlDemo:'Descargar el ejemplo (.docx)',
       prompt:'Modo teleprompter', promptDesc:'Para demos: el texto avanza solo siguiendo tu voz, sin validar nada.', exit:'Salir', smaller:'Texto más pequeño', bigger:'Texto más grande', tapHint:'Toca un pasaje para situarte en él', listening:'Escuchando', paused:'En pausa', resumeLast:n=>`Retomar «${n}»`, lastScript:'el último guion',
       sep:': ', tagline:'tu apuntador por voz', newScript:'Cambiar de guion', uiLangLabel:'Idioma de la interfaz',
-      dropTitle:'Suelta aquí tu guion de Word',
+      dropTitle:'Suelta aquí tu guion',
       dropText:'Tus frases aparecen una a una. Dilas en voz alta: en cuanto esté bien, pasas a la siguiente.',
-      chooseFile:'Elegir un archivo .docx', showPaste:'Pegar el texto en su lugar', demo:'Probar con un ejemplo',
+      chooseFile:'Elegir un archivo', showPaste:'Pegar el texto en su lugar', demo:'Probar con un ejemplo',
       pastePh:'NOMBRE: frase\nOTRO NOMBRE: frase…\n\no simplemente un párrafo por frase.',
       usePaste:'Usar este texto',
-      formats:'Formatos admitidos: «NOMBRE: texto» en una línea, o el nombre solo en mayúsculas seguido de la frase. Las acotaciones entre paréntesis o corchetes se muestran pero no se dicen. Sin nombres, cada párrafo es una frase.',
+      formats:'Archivos admitidos: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, se usan las notas del orador como guion), PDF, texto (.txt), Markdown (.md) y RTF. Formatos reconocidos: «NOMBRE: texto» en una línea, o el nombre solo en mayúsculas seguido de la frase. Las acotaciones entre paréntesis o corchetes se muestran pero no se dicen. Sin nombres, cada párrafo es una frase.',
       speechLang:'Idioma hablado', thr:'Exigencia', thrLabel:n=>`${n} % de las palabras`,
       mask:'Ocultar el texto', maskHelp:'Las palabras aparecen a medida que las dices',
       auto:'Avanzar automáticamente', autoHelp:'Desactívalo para validar tú mismo cada frase',
@@ -427,9 +430,9 @@ LEA: Thank you, and now over to the numbers.`, demoSpeech:'en-US'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'frase','frases')}. No se detectaron nombres: cada párrafo es una frase que decir.`,
       more:n=>`… y ${n} más`,
       errNoLines:'No se encontró ninguna frase en este documento. Comprueba que contiene texto.',
-      errDoc:'Los archivos .doc antiguos no se pueden leer. Ábrelo en Word y guárdalo como .docx.',
-      errNotDocx:'Este archivo no es un documento de Word .docx.',
-      errMammoth:'El lector de archivos de Word no se pudo cargar. Comprueba tu conexión o pega el texto.',
+      errDoc:'Los formatos antiguos .doc y .ppt no se pueden leer. Abre el archivo y guárdalo como .docx o .pptx.',
+      errNotDocx:'Este formato no es compatible. Usa un archivo .docx, .odt, .pptx, .pdf, .txt, .md o .rtf.',
+      errMammoth:'El lector de archivos no se pudo cargar. Comprueba tu conexión o pega el texto.',
       errRead:'No se puede leer este archivo. Puede estar protegido o dañado.',
       errRoleEmpty:'Este papel no tiene frases.',
       srFramed:'El reconocimiento de voz no está disponible en esta ventana. Descarga el archivo y ábrelo en Chrome, Edge o Safari.',
@@ -452,16 +455,17 @@ MARCOS: Responderemos a vuestras preguntas al final de la presentación.
 LEA: Gracias, y vamos con las cifras.`, demoSpeech:'es-ES'
     },
     de: {
+      slideLabel:n=>`Folie ${n}`,
       toSetup:'Zurück zu den Einstellungen',
       dlDemo:'Beispiel herunterladen (.docx)',
       prompt:'Teleprompter-Modus', promptDesc:'Für Demos: Der Text läuft von selbst mit deiner Stimme mit, ohne Prüfung.', exit:'Beenden', smaller:'Kleinerer Text', bigger:'Größerer Text', tapHint:'Tippe auf eine Stelle, um dorthin zu springen', listening:'Hört zu', paused:'Pausiert', resumeLast:n=>`„${n}“ fortsetzen`, lastScript:'letztes Skript',
       sep:': ', tagline:'dein Sprach-Souffleur', newScript:'Skript wechseln', uiLangLabel:'Sprache der Oberfläche',
-      dropTitle:'Zieh dein Word-Skript hierher',
+      dropTitle:'Zieh dein Skript hierher',
       dropText:'Deine Sätze erscheinen einzeln. Sprich sie laut aus: Sobald es passt, geht es zum nächsten.',
-      chooseFile:'.docx-Datei auswählen', showPaste:'Stattdessen Text einfügen', demo:'Mit einem Beispiel testen',
+      chooseFile:'Datei auswählen', showPaste:'Stattdessen Text einfügen', demo:'Mit einem Beispiel testen',
       pastePh:'NAME: Satz\nANDERER NAME: Satz…\n\noder einfach ein Absatz pro Satz.',
       usePaste:'Diesen Text verwenden',
-      formats:'Unterstützte Formate: „NAME: Text“ in einer Zeile oder der Name allein in Großbuchstaben, gefolgt vom Satz. Regieanweisungen in Klammern werden angezeigt, aber nicht gesprochen. Ohne Namen ist jeder Absatz ein Satz.',
+      formats:'Unterstützte Dateien: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, die Referentennotizen dienen als Skript), PDF, Text (.txt), Markdown (.md) und RTF. Erkannte Formate: „NAME: Text“ in einer Zeile oder der Name allein in Großbuchstaben, gefolgt vom Satz. Regieanweisungen in Klammern werden angezeigt, aber nicht gesprochen. Ohne Namen ist jeder Absatz ein Satz.',
       speechLang:'Gesprochene Sprache', thr:'Genauigkeit', thrLabel:n=>`${n} % der Wörter`,
       mask:'Text ausblenden', maskHelp:'Wörter erscheinen, sobald du sie sagst',
       auto:'Automatisch weiter', autoHelp:'Ausschalten, um jeden Satz selbst zu bestätigen',
@@ -475,9 +479,9 @@ LEA: Gracias, y vamos con las cifras.`, demoSpeech:'es-ES'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'Satz','Sätze')}. Keine Sprechernamen erkannt: Jeder Absatz ist ein Satz zum Sprechen.`,
       more:n=>`… und ${n} weitere`,
       errNoLines:'In diesem Dokument wurden keine Sätze gefunden. Prüfe, ob es Text enthält.',
-      errDoc:'Alte .doc-Dateien können nicht gelesen werden. Öffne sie in Word und speichere sie als .docx.',
-      errNotDocx:'Diese Datei ist kein Word-Dokument (.docx).',
-      errMammoth:'Der Word-Leser konnte nicht geladen werden. Prüfe deine Verbindung oder füge den Text ein.',
+      errDoc:'Alte .doc- und .ppt-Dateien können nicht gelesen werden. Öffne die Datei und speichere sie als .docx oder .pptx.',
+      errNotDocx:'Dieses Format wird nicht unterstützt. Verwende eine .docx-, .odt-, .pptx-, .pdf-, .txt-, .md- oder .rtf-Datei.',
+      errMammoth:'Der Dateileser konnte nicht geladen werden. Prüfe deine Verbindung oder füge den Text ein.',
       errRead:'Diese Datei kann nicht gelesen werden. Sie ist möglicherweise geschützt oder beschädigt.',
       errRoleEmpty:'Diese Rolle hat keine Sätze.',
       srFramed:'Spracherkennung ist in diesem Fenster nicht verfügbar. Lade die Datei herunter und öffne sie in Chrome, Edge oder Safari.',
@@ -500,16 +504,17 @@ MARK: Eure Fragen beantworten wir am Ende der Präsentation.
 LEA: Danke, und jetzt zu den Zahlen.`, demoSpeech:'de-DE'
     },
     it: {
+      slideLabel:n=>`Diapositiva ${n}`,
       toSetup:'Torna alle impostazioni',
       dlDemo:'Scarica l’esempio (.docx)',
       prompt:'Modalità gobbo', promptDesc:'Per le demo: il testo scorre da solo seguendo la tua voce, senza verifiche.', exit:'Esci', smaller:'Testo più piccolo', bigger:'Testo più grande', tapHint:'Tocca un passaggio per posizionarti lì', listening:'In ascolto', paused:'In pausa', resumeLast:n=>`Riprendi «${n}»`, lastScript:'ultimo copione',
       sep:': ', tagline:'il tuo suggeritore vocale', newScript:'Cambia copione', uiLangLabel:'Lingua dell’interfaccia',
-      dropTitle:'Trascina qui il tuo copione Word',
+      dropTitle:'Trascina qui il tuo copione',
       dropText:'Le tue battute appaiono una alla volta. Dille ad alta voce: appena è giusta, passi alla successiva.',
-      chooseFile:'Scegli un file .docx', showPaste:'Incolla il testo', demo:'Prova con un esempio',
+      chooseFile:'Scegli un file', showPaste:'Incolla il testo', demo:'Prova con un esempio',
       pastePh:'NOME: battuta\nALTRO NOME: battuta…\n\no semplicemente un paragrafo per battuta.',
       usePaste:'Usa questo testo',
-      formats:'Formati supportati: «NOME: testo» su una riga, oppure il nome da solo in maiuscolo seguito dalla battuta. Le didascalie tra parentesi tonde o quadre vengono mostrate ma non si dicono. Senza nomi, ogni paragrafo è una battuta.',
+      formats:'File accettati: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, le note del relatore fanno da copione), PDF, testo (.txt), Markdown (.md) e RTF. Formati riconosciuti: «NOME: testo» su una riga, oppure il nome da solo in maiuscolo seguito dalla battuta. Le didascalie tra parentesi tonde o quadre vengono mostrate ma non si dicono. Senza nomi, ogni paragrafo è una battuta.',
       speechLang:'Lingua parlata', thr:'Precisione', thrLabel:n=>`${n}% delle parole`,
       mask:'Nascondi il testo', maskHelp:'Le parole compaiono man mano che le dici',
       auto:'Avanza automaticamente', autoHelp:'Disattiva per confermare tu ogni battuta',
@@ -523,9 +528,9 @@ LEA: Danke, und jetzt zu den Zahlen.`, demoSpeech:'de-DE'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'battuta','battute')}. Nessun nome di personaggio rilevato: ogni paragrafo è una battuta da dire.`,
       more:n=>`… e altre ${n}`,
       errNoLines:'Nessuna battuta trovata in questo documento. Controlla che contenga del testo.',
-      errDoc:'I vecchi file .doc non possono essere letti. Aprilo in Word e salvalo come .docx.',
-      errNotDocx:'Questo file non è un documento Word .docx.',
-      errMammoth:'Il lettore di file Word non si è caricato. Controlla la connessione o incolla il testo.',
+      errDoc:'I vecchi formati .doc e .ppt non possono essere letti. Apri il file e salvalo come .docx o .pptx.',
+      errNotDocx:'Questo formato non è supportato. Usa un file .docx, .odt, .pptx, .pdf, .txt, .md o .rtf.',
+      errMammoth:'Il lettore di file non si è caricato. Controlla la connessione o incolla il testo.',
       errRead:'Impossibile leggere questo file. Potrebbe essere protetto o danneggiato.',
       errRoleEmpty:'Questo ruolo non ha battute.',
       srFramed:'Il riconoscimento vocale non è disponibile in questa finestra. Scarica il file e aprilo in Chrome, Edge o Safari.',
@@ -548,16 +553,17 @@ MARCO: Risponderemo alle vostre domande alla fine della presentazione.
 LEA: Grazie, e ora passiamo ai numeri.`, demoSpeech:'it-IT'
     },
     sv: {
+      slideLabel:n=>`Bild ${n}`,
       toSetup:'Tillbaka till inställningarna',
       dlDemo:'Ladda ner exemplet (.docx)',
       prompt:'Teleprompterläge', promptDesc:'För demos: texten rullar av sig själv i takt med rösten, utan kontroll.', exit:'Avsluta', smaller:'Mindre text', bigger:'Större text', tapHint:'Tryck på ett stycke för att hoppa dit', listening:'Lyssnar', paused:'Pausad', resumeLast:n=>`Fortsätt med ”${n}”`, lastScript:'senaste manuset',
       sep:': ', tagline:'din röstsufflör', newScript:'Byt manus', uiLangLabel:'Gränssnittets språk',
-      dropTitle:'Släpp ditt Word-manus här',
+      dropTitle:'Släpp ditt manus här',
       dropText:'Dina repliker visas en i taget. Säg dem högt: så fort det stämmer går du vidare till nästa.',
-      chooseFile:'Välj en .docx-fil', showPaste:'Klistra in texten i stället', demo:'Prova med ett exempel',
+      chooseFile:'Välj en fil', showPaste:'Klistra in texten i stället', demo:'Prova med ett exempel',
       pastePh:'NAMN: replik\nANNAT NAMN: replik…\n\neller bara ett stycke per replik.',
       usePaste:'Använd den här texten',
-      formats:'Format som stöds: ”NAMN: text” på en rad, eller namnet ensamt med versaler följt av repliken. Scenanvisningar inom parentes eller hakparentes visas men sägs inte. Utan namn är varje stycke en replik.',
+      formats:'Filer som stöds: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, talaranteckningarna används som manus), PDF, text (.txt), Markdown (.md) och RTF. Format som känns igen: ”NAMN: text” på en rad, eller namnet ensamt med versaler följt av repliken. Scenanvisningar inom parentes eller hakparentes visas men sägs inte. Utan namn är varje stycke en replik.',
       speechLang:'Talat språk', thr:'Noggrannhet', thrLabel:n=>`${n} % av orden`,
       mask:'Dölj texten', maskHelp:'Orden visas allteftersom du säger dem',
       auto:'Gå vidare automatiskt', autoHelp:'Stäng av för att själv bekräfta varje replik',
@@ -571,9 +577,9 @@ LEA: Grazie, e ora passiamo ai numeri.`, demoSpeech:'it-IT'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'replik','repliker')}. Inga talarnamn hittades: varje stycke är en replik att säga.`,
       more:n=>`… och ${n} till`,
       errNoLines:'Inga repliker hittades i dokumentet. Kontrollera att det innehåller text.',
-      errDoc:'Gamla .doc-filer kan inte läsas. Öppna filen i Word och spara den som .docx.',
-      errNotDocx:'Filen är inte ett Word-dokument (.docx).',
-      errMammoth:'Läsaren för Word-filer kunde inte laddas. Kontrollera anslutningen eller klistra in texten.',
+      errDoc:'Gamla .doc- och .ppt-filer kan inte läsas. Öppna filen och spara den som .docx eller .pptx.',
+      errNotDocx:'Formatet stöds inte. Använd en .docx-, .odt-, .pptx-, .pdf-, .txt-, .md- eller .rtf-fil.',
+      errMammoth:'Filläsaren kunde inte laddas. Kontrollera anslutningen eller klistra in texten.',
       errRead:'Filen kan inte läsas. Den kan vara skyddad eller skadad.',
       errRoleEmpty:'Den här rollen har inga repliker.',
       srFramed:'Taligenkänning är inte tillgänglig i det här fönstret. Ladda ner filen och öppna den i Chrome, Edge eller Safari.',
@@ -596,16 +602,17 @@ MARK: Vi tar era frågor i slutet av presentationen.
 LEA: Tack, och nu till siffrorna.`, demoSpeech:'sv-SE'
     },
     pt: {
+      slideLabel:n=>`Diapositivo ${n}`,
       toSetup:'Voltar às definições',
       dlDemo:'Descarregar o exemplo (.docx)',
       prompt:'Modo teleponto', promptDesc:'Para demos: o texto avança sozinho acompanhando a sua voz, sem validação.', exit:'Sair', smaller:'Texto menor', bigger:'Texto maior', tapHint:'Toque num trecho para ir até ele', listening:'A ouvir', paused:'Em pausa', resumeLast:n=>`Retomar “${n}”`, lastScript:'último roteiro',
       sep:': ', tagline:'o seu ponto por voz', newScript:'Trocar de roteiro', uiLangLabel:'Idioma da interface',
-      dropTitle:'Solte aqui o seu roteiro do Word',
+      dropTitle:'Solte aqui o seu roteiro',
       dropText:'As suas falas aparecem uma de cada vez. Diga-as em voz alta: assim que estiver certo, passa para a próxima.',
-      chooseFile:'Escolher um arquivo .docx', showPaste:'Colar o texto em vez disso', demo:'Experimentar com um exemplo',
+      chooseFile:'Escolher um arquivo', showPaste:'Colar o texto em vez disso', demo:'Experimentar com um exemplo',
       pastePh:'NOME: fala\nOUTRO NOME: fala…\n\nou simplesmente um parágrafo por fala.',
       usePaste:'Usar este texto',
-      formats:'Formatos aceitos: “NOME: texto” numa linha, ou o nome sozinho em maiúsculas seguido da fala. As rubricas entre parênteses ou colchetes aparecem, mas não são ditas. Sem nomes, cada parágrafo é uma fala.',
+      formats:'Arquivos aceitos: Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, as notas do orador servem de roteiro), PDF, texto (.txt), Markdown (.md) e RTF. Formatos reconhecidos: “NOME: texto” numa linha, ou o nome sozinho em maiúsculas seguido da fala. As rubricas entre parênteses ou colchetes aparecem, mas não são ditas. Sem nomes, cada parágrafo é uma fala.',
       speechLang:'Idioma falado', thr:'Exigência', thrLabel:n=>`${n}% das palavras`,
       mask:'Ocultar o texto', maskHelp:'As palavras aparecem à medida que as diz',
       auto:'Avançar automaticamente', autoHelp:'Desative para validar cada fala manualmente',
@@ -619,9 +626,9 @@ LEA: Tack, och nu till siffrorna.`, demoSpeech:'sv-SE'
       noteNone:(src,t)=>`${src}${t} ${pl(t,'fala','falas')}. Nenhum nome de personagem detetado: cada parágrafo é uma fala a dizer.`,
       more:n=>`… e mais ${n}`,
       errNoLines:'Nenhuma fala encontrada neste documento. Verifique se contém texto.',
-      errDoc:'Os arquivos .doc antigos não podem ser lidos. Abra-o no Word e guarde-o como .docx.',
-      errNotDocx:'Este arquivo não é um documento Word .docx.',
-      errMammoth:'O leitor de arquivos Word não carregou. Verifique a ligação ou cole o texto.',
+      errDoc:'Os formatos antigos .doc e .ppt não podem ser lidos. Abra o arquivo e guarde-o como .docx ou .pptx.',
+      errNotDocx:'Este formato não é suportado. Use um arquivo .docx, .odt, .pptx, .pdf, .txt, .md ou .rtf.',
+      errMammoth:'O leitor de arquivos não carregou. Verifique a ligação ou cole o texto.',
       errRead:'Não é possível ler este arquivo. Pode estar protegido ou danificado.',
       errRoleEmpty:'Este papel não tem falas.',
       srFramed:'O reconhecimento de voz não está disponível nesta janela. Descarregue o arquivo e abra-o no Chrome, Edge ou Safari.',
@@ -644,16 +651,17 @@ MARCOS: Responderemos às vossas perguntas no final da apresentação.
 LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
     },
     ar: {
+      slideLabel:n=>`الشريحة ${n}`,
       toSetup:'العودة إلى الإعدادات',
       dlDemo:'تنزيل المثال (‎.docx)',
       prompt:'وضع الملقّن', promptDesc:'للعروض التوضيحية: يتحرك النص تلقائيًا مع صوتك، دون أي تحقق.', exit:'خروج', smaller:'تصغير النص', bigger:'تكبير النص', tapHint:'المس أي مقطع للانتقال إليه', listening:'يستمع', paused:'متوقف مؤقتًا', resumeLast:n=>`استئناف «${n}»`, lastScript:'آخر نص',
       sep:': ', tagline:'ملقّنك الصوتي', newScript:'تغيير النص', uiLangLabel:'لغة الواجهة',
-      dropTitle:'أفلِت ملف Word الخاص بنصك هنا',
+      dropTitle:'أفلِت ملف النص هنا',
       dropText:'تظهر مقاطعك واحدًا تلو الآخر. قلها بصوت عالٍ: بمجرد أن يكون المقطع صحيحًا، تنتقل إلى التالي.',
-      chooseFile:'اختيار ملف ‎.docx', showPaste:'لصق النص بدلًا من ذلك', demo:'التجربة بمثال',
+      chooseFile:'اختيار ملف', showPaste:'لصق النص بدلًا من ذلك', demo:'التجربة بمثال',
       pastePh:'الاسم: المقطع\nاسم آخر: المقطع…\n\nأو ببساطة فقرة واحدة لكل مقطع.',
       usePaste:'استخدام هذا النص',
-      formats:'الصيغ المدعومة: «الاسم: النص» في سطر واحد، أو الاسم وحده في سطر (بأحرف كبيرة في اللغات اللاتينية) يليه المقطع. تُعرض الإرشادات المكتوبة بين قوسين دون أن تُقال. من دون أسماء، تكون كل فقرة مقطعًا.',
+      formats:'الملفات المقبولة: Word ‏(.docx)، وLibreOffice ‏(.odt)، وPowerPoint ‏(.pptx، وتُستخدم ملاحظات المتحدث كنص)، وPDF، والنص العادي (.txt)، وMarkdown ‏(.md)، وRTF. الصيغ المدعومة: «الاسم: النص» في سطر واحد، أو الاسم وحده في سطر (بأحرف كبيرة في اللغات اللاتينية) يليه المقطع. تُعرض الإرشادات المكتوبة بين قوسين دون أن تُقال. من دون أسماء، تكون كل فقرة مقطعًا.',
       speechLang:'لغة الكلام', thr:'درجة الدقة', thrLabel:n=>`${n}٪ من الكلمات`,
       mask:'إخفاء النص', maskHelp:'تظهر الكلمات كلما نطقت بها',
       auto:'الانتقال تلقائيًا', autoHelp:'عطّله لتأكيد كل مقطع بنفسك',
@@ -667,9 +675,9 @@ LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
       noteNone:(src,t)=>`${src}عدد المقاطع: ${t}. لم يُعثر على أسماء متحدثين: كل فقرة مقطع عليك قوله.`,
       more:n=>`… و${n} أخرى`,
       errNoLines:'لم يُعثر على أي مقطع في هذا المستند. تحقّق من أنه يحتوي على نص.',
-      errDoc:'لا يمكن قراءة ملفات ‎.doc القديمة. افتح الملف في Word واحفظه بصيغة ‎.docx.',
-      errNotDocx:'هذا الملف ليس مستند Word بصيغة ‎.docx.',
-      errMammoth:'تعذّر تحميل قارئ ملفات Word. تحقّق من اتصالك أو الصق النص.',
+      errDoc:'لا يمكن قراءة ملفات ‎.doc و‎.ppt القديمة. افتح الملف واحفظه بصيغة ‎.docx أو ‎.pptx.',
+      errNotDocx:'هذه الصيغة غير مدعومة. استخدم ملفًا بصيغة ‎.docx أو ‎.odt أو ‎.pptx أو ‎.pdf أو ‎.txt أو ‎.md أو ‎.rtf.',
+      errMammoth:'تعذّر تحميل قارئ الملفات. تحقّق من اتصالك أو الصق النص.',
       errRead:'تعذّرت قراءة هذا الملف. قد يكون محميًا أو تالفًا.',
       errRoleEmpty:'لا توجد مقاطع لهذا الدور.',
       srFramed:'التعرّف على الكلام غير متاح في هذه النافذة. نزّل الملف وافتحه في Chrome أو Edge أو Safari.',
@@ -909,22 +917,214 @@ LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
   let lastLoadErr = null;
   function showLoadErr(k){ lastLoadErr = k; $('loadErr').textContent = t(k); $('loadErr').hidden = false; }
 
-  async function loadFile(file){
-    if (!file) return;
-    if (!/\.docx$/i.test(file.name)){
-      showLoadErr(/\.doc$/i.test(file.name)
-? 'errDoc' : 'errNotDocx');
-      return;
-    }
-    if (!window.mammoth){ showLoadErr('errMammoth'); return; }
-    try {
-      const buf = await file.arrayBuffer();
-      const res = await mammoth.extractRawText({arrayBuffer: buf});
-      loadText(res.value, file.name.replace(/\.docx$/i,''));
-    } catch (e){
-      showLoadErr('errRead');
+  /* ---------- Lecture des différents formats ---------- */
+  const FORMATS = /\.(docx|odt|pptx|pdf|txt|md|markdown|rtf)$/i;
+  const loadScript = src => new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s);
+  });
+  async function ensureJSZip(){ if (!window.JSZip) await loadScript('https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js'); }
+  async function ensurePdf(){
+    if (!window.pdfjsLib){
+      await loadScript('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.min.js');
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/legacy/build/pdf.worker.min.js';
     }
   }
+  const xmlDoc = s => new DOMParser().parseFromString(s, 'application/xml');
+  const byLocal = (root, name) => [...root.getElementsByTagName('*')].filter(e => e.localName === name);
+
+  // Texte brut : UTF-8, avec repli Windows-1252 pour les vieux fichiers
+  async function readTxt(file){
+    const buf = await file.arrayBuffer();
+    let txt = new TextDecoder('utf-8').decode(buf);
+    if (txt.includes('\uFFFD')) { try { txt = new TextDecoder('windows-1252').decode(buf); } catch {} }
+    return txt.replace(/^\uFEFF/, '');
+  }
+
+  // Markdown : on garde le texte ; les titres deviennent des repères [entre crochets]
+  function mdToText(md){
+    let inCode = false;
+    return md.split(/\r?\n/).map(l => {
+      if (/^\s*```/.test(l)){ inCode = !inCode; return ''; }
+      if (inCode || /^\s*(---+|\*\*\*+|___+)\s*$/.test(l)) return '';
+      const h = l.match(/^\s*#{1,6}\s+(.*?)\s*#*\s*$/);
+      if (h) return `[${h[1]}]`;
+      return l.replace(/^\s*>\s?/, '').replace(/^\s*([-*+]|\d+[.)])\s+/, '')
+        .replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/(\*\*|__)(.+?)\1/g, '$2').replace(/(\*|_)(.+?)\1/g, '$2').replace(/`([^`]+)`/g, '$1');
+    }).join('\n');
+  }
+
+  // RTF : extraction simple du texte
+  function rtfToText(rtf){
+    let out = '', i = 0, depth = 0; const skipAt = [];
+    const destinations = /^(fonttbl|colortbl|stylesheet|info|pict|object|header|footer|headerl|headerr|footerl|footerr|fldinst|themedata|colorschememapping|latentstyles|datastore|xmlnstbl|listtable|listoverridetable|rsidtbl|generator)$/;
+    let uc = 1, skipChars = 0;
+    const skipping = () => skipAt.length && depth >= skipAt[skipAt.length-1];
+    while (i < rtf.length){
+      const c = rtf[i];
+      if (c === '{'){ depth++; i++; if (rtf.startsWith('\\*', i) && !skipping()) skipAt.push(depth); continue; }
+      if (c === '}'){ if (skipAt.length && skipAt[skipAt.length-1] === depth) skipAt.pop(); depth--; i++; continue; }
+      if (c === '\\'){
+        const m = rtf.slice(i).match(/^\\([a-zA-Z]+)(-?\d+)? ?|^\\'([0-9a-fA-F]{2})|^\\([^a-zA-Z])/);
+        if (!m){ i++; continue; }
+        i += m[0].length;
+        if (skipping()) continue;
+        if (m[3]){ if (skipChars){ skipChars--; continue; } out += new TextDecoder('windows-1252').decode(new Uint8Array([parseInt(m[3],16)])); continue; }
+        if (m[4]){ if (m[4] === '~') out += ' '; else if ('\\{}'.includes(m[4])) out += m[4]; continue; }
+        const w = m[1], n = m[2];
+        if (destinations.test(w)){ skipAt.push(depth); continue; }
+        if (w === 'par' || w === 'line' || w === 'sect' || w === 'page') out += '\n';
+        else if (w === 'tab') out += ' ';
+        else if (w === 'uc') uc = +n;
+        else if (w === 'u'){ let code = +n; if (code < 0) code += 65536; out += String.fromCharCode(code); skipChars = uc; }
+        else if (w === 'emdash') out += '—'; else if (w === 'endash') out += '–';
+        else if (w === 'lquote') out += '‘'; else if (w === 'rquote') out += '’';
+        else if (w === 'ldblquote') out += '“'; else if (w === 'rdblquote') out += '”';
+        continue;
+      }
+      if (c === '\r' || c === '\n'){ i++; continue; }
+      if (!skipping()){ if (skipChars) skipChars--; else out += c; }
+      i++;
+    }
+    return out;
+  }
+
+  // OpenDocument (.odt)
+  function odfText(node){
+    let s = '';
+    for (const ch of node.childNodes){
+      if (ch.nodeType === 3) s += ch.data;
+      else if (ch.nodeType === 1){
+        const n = ch.localName;
+        if (n === 's') s += ' '.repeat(+(ch.getAttribute('text:c') || 1));
+        else if (n === 'tab') s += ' ';
+        else if (n === 'line-break') s += '\n';
+        else if (n === 'note' || n === 'annotation' || n === 'tracked-changes') continue;
+        else s += odfText(ch);
+      }
+    }
+    return s;
+  }
+  async function readOdt(buf){
+    await ensureJSZip();
+    const zip = await JSZip.loadAsync(buf);
+    const doc = xmlDoc(await zip.file('content.xml').async('string'));
+    const body = byLocal(doc, 'body')[0] || doc;
+    const isPara = e => e.localName === 'p' || e.localName === 'h';
+    return [...body.getElementsByTagName('*')]
+      .filter(e => isPara(e) && !(e.parentNode && isPara(e.parentNode)))
+      .map(odfText).join('\n');
+  }
+
+  // PowerPoint (.pptx) : les notes du présentateur servent de script, sinon le texte des diapositives
+  function drawingParas(doc, filter){
+    const out = [];
+    for (const sp of byLocal(doc, 'sp')){
+      const ph = byLocal(sp, 'ph')[0];
+      if (!filter(ph)) continue;
+      for (const p of byLocal(sp, 'p').filter(p => p.namespaceURI && p.namespaceURI.includes('drawingml'))){
+        const txt = [...p.getElementsByTagName('*')].filter(e => e.localName === 't' || e.localName === 'br')
+          .map(e => e.localName === 'br' ? ' ' : e.textContent).join('').trim();
+        if (txt) out.push(txt);
+      }
+    }
+    return out;
+  }
+  async function readPptx(buf){
+    await ensureJSZip();
+    const zip = await JSZip.loadAsync(buf);
+    const read = async p => zip.file(p) ? xmlDoc(await zip.file(p).async('string')) : null;
+    const pres = await read('ppt/presentation.xml');
+    const rels = await read('ppt/_rels/presentation.xml.rels');
+    const relMap = {};
+    byLocal(rels, 'Relationship').forEach(r => relMap[r.getAttribute('Id')] = r.getAttribute('Target'));
+    let slidePaths = byLocal(pres, 'sldId').map(s => {
+      const id = s.getAttribute('r:id') || [...s.attributes].find(a => a.localName === 'id' && a.name !== 'id')?.value;
+      const t = relMap[id] || ''; return 'ppt/' + t.replace(/^\/?ppt\//, '').replace(/^\.\//, '');
+    }).filter(p => zip.file(p));
+    if (!slidePaths.length) slidePaths = Object.keys(zip.files).filter(f => /^ppt\/slides\/slide\d+\.xml$/.test(f))
+      .sort((a, b) => +a.match(/(\d+)\.xml/)[1] - +b.match(/(\d+)\.xml/)[1]);
+    const slides = [];
+    for (const path of slidePaths){
+      const slide = await read(path);
+      const srel = await read(path.replace(/slides\/(slide\d+\.xml)$/, 'slides/_rels/$1.rels'));
+      let notes = [];
+      const nrel = srel && byLocal(srel, 'Relationship').find(r => /notesSlide$/.test(r.getAttribute('Type')));
+      if (nrel){
+        const np = 'ppt/' + nrel.getAttribute('Target').replace(/^\.\.\//, '').replace(/^\/?ppt\//, '');
+        const ndoc = await read(np);
+        if (ndoc) notes = drawingParas(ndoc, ph => ph && ph.getAttribute('type') === 'body');
+      }
+      const text = drawingParas(slide, ph => !ph || !/^(sldNum|dt|ftr)$/.test(ph.getAttribute('type') || ''));
+      slides.push({notes, text});
+    }
+    const useNotes = slides.some(s => s.notes.length);
+    return slides.map((s, i) => [`[${t('slideLabel', i + 1)}]`, ...(useNotes ? s.notes : s.text)].join('\n')).join('\n');
+  }
+
+  // PDF : on reconstitue les paragraphes à partir des lignes
+  async function readPdf(buf){
+    await ensurePdf();
+    const pdf = await pdfjsLib.getDocument({data: buf}).promise;
+    const paras = [];
+    for (let n = 1; n <= pdf.numPages; n++){
+      const page = await pdf.getPage(n);
+      const content = await page.getTextContent();
+      const lines = []; let cur = null;
+      for (const it of content.items){
+        if (!('str' in it)) continue;
+        const y = it.transform[5], h = Math.abs(it.transform[3]) || it.height || 10;
+        if (!cur || Math.abs(y - cur.y) > h * 0.5){ cur = {y, h, s: ''}; lines.push(cur); }
+        cur.s += it.str;
+        if (it.hasEOL) cur = null;
+      }
+      let prev = null, para = '';
+      const flush = () => { if (para.trim()) paras.push(para.trim()); para = ''; };
+      for (const ln of lines){
+        const s = ln.s.replace(/\s+/g, ' ').trim();
+        if (!s) continue; // lignes vides de pdf.js : l'écart vertical suffit à détecter les paragraphes
+        const starts = colonRe.test(s) || isUpperName(s) || /^[\(\[]/.test(s);
+        const gap = prev ? prev.y - ln.y : 0;
+        const brk = !prev || starts || gap > Math.max(prev.h, ln.h) * 1.7 || gap < 0 || isUpperName(para) || /[\)\]]$/.test(para);
+        if (brk){ flush(); para = s; }
+        else para = /[-‐]$/.test(para) && /^\p{Ll}/u.test(s) ? para.slice(0, -1) + s : para + ' ' + s;
+        prev = ln;
+      }
+      flush();
+    }
+    return paras.join('\n');
+  }
+
+  async function extractText(file){
+    const name = file.name.toLowerCase();
+    if (/\.(txt)$/.test(name)) return readTxt(file);
+    if (/\.(md|markdown)$/.test(name)) return mdToText(await readTxt(file));
+    if (/\.rtf$/.test(name)) return rtfToText(await readTxt(file));
+    const buf = await file.arrayBuffer();
+    if (/\.docx$/.test(name)){
+      if (!window.mammoth) throw new Error('lib');
+      return (await mammoth.extractRawText({arrayBuffer: buf})).value;
+    }
+    if (/\.odt$/.test(name)) return readOdt(buf);
+    if (/\.pptx$/.test(name)) return readPptx(buf);
+    if (/\.pdf$/.test(name)) return readPdf(buf);
+    throw new Error('format');
+  }
+
+  async function loadFile(file){
+    if (!file) return;
+    if (!FORMATS.test(file.name)){
+      showLoadErr(/\.(doc|ppt)$/i.test(file.name) ? 'errDoc' : 'errNotDocx');
+      return;
+    }
+    try {
+      const txt = await extractText(file);
+      loadText(txt, file.name.replace(/\.[^.]+$/, ''));
+    } catch (e){
+      showLoadErr(e && e.message === 'lib' || e && e.type === 'error' ? 'errMammoth' : 'errRead');
+    }
+  }
+
 
   $('file').onchange = e => loadFile(e.target.files[0]);
   const drop = $('drop');

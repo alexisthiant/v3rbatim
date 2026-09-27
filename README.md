@@ -1,6 +1,6 @@
 # v3rbatim
 
-**Your voice prompter.** Load a script from a Word file, say your lines out loud, and v3rbatim moves on as soon as you get them right. A teleprompter mode follows your voice during live demos.
+**Your voice prompter.** Load a script (Word, PowerPoint, PDF and more), say your lines out loud, and v3rbatim moves on as soon as you get them right. A teleprompter mode follows your voice during live demos.
 
 ### ▶️ [Try it now — v3rbatim.netlify.app](https://v3rbatim.netlify.app)
 
@@ -18,7 +18,18 @@ Nothing to install: open the link in Chrome, Edge or Safari, on a computer, tabl
 
 ## Script format
 
-v3rbatim reads `.docx` files (Word, LibreOffice, Google Docs export) or pasted text.
+v3rbatim reads the following files, or pasted text:
+
+| Format | Notes |
+| --- | --- |
+| Word `.docx` | Also Google Docs (File › Download › .docx) |
+| LibreOffice `.odt` | |
+| PowerPoint `.pptx` | The **speaker notes** are used as the script, one slide after another. Without notes, the slide text is used. |
+| PDF | Text-based PDFs only (not scans). Paragraphs are rebuilt from the page layout. |
+| Plain text `.txt`, Markdown `.md` | Markdown headings become cues that are shown but not spoken. |
+| RTF `.rtf` | |
+
+Old `.doc` and `.ppt` files must first be saved as `.docx` or `.pptx`.
 
 ```
 ANNA: Good morning everyone, and thank you for coming.
@@ -71,5 +82,6 @@ Rien à installer : ouvre le lien dans Chrome, Edge ou Safari, sur ordinateur, t
 - **Mode répétition** : les répliques s'affichent une à une, le micro vérifie ce que tu dis. Texte masquable pour apprendre par cœur, mot soufflé à la demande, bilan par réplique.
 - **Mode prompteur** : le texte défile tout seul en suivant ta voix, tolère les écarts et met en évidence les indications comme *(ouvrir le tableau de bord)*. Touche un passage pour t'y placer.
 - **8 langues d'interface**, choisies par défaut selon le navigateur, et une langue parlée réglable séparément.
+- **Fichiers** : Word (.docx), LibreOffice (.odt), PowerPoint (.pptx, avec les notes du présentateur comme script), PDF (hors documents scannés), texte (.txt), Markdown (.md) et RTF.
 - **Format** : `NOM : texte`, ou le nom seul en majuscules suivi de la réplique. Les indications entre parenthèses ne sont pas à dire. Exemples dans le dossier [`examples`](examples/).
 - **Navigateurs** : Chrome, Edge, Safari (y compris sur iPhone et iPad) et Samsung Internet. Firefox, Opera, Brave et Vivaldi ne donnent pas accès à la reconnaissance vocale : l'appli s'ouvre, mais le micro ne suit pas. La reconnaissance vocale est assurée par le navigateur (Google ou Apple) et nécessite Internet.
