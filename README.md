@@ -2,6 +2,10 @@
 
 **Your voice prompter.** Load a script from a Word file, say your lines out loud, and v3rbatim moves on as soon as you get them right. A teleprompter mode follows your voice during live demos.
 
+### ▶️ [Try it now — v3rbatim.netlify.app](https://v3rbatim.netlify.app)
+
+Nothing to install: open the link in Chrome, Edge or Safari, on a computer, tablet or phone.
+
 🇫🇷 [Version française plus bas](#français)
 
 ## Features
@@ -46,7 +50,9 @@ Speech recognition is provided by the browser itself and needs an internet conne
 
 ## Run it
 
-Open `index.html` in Chrome, Edge or Safari. Or host it for free on GitHub Pages or Netlify: the app is a single static file, no build step.
+- **Online:** use the hosted version at [v3rbatim.netlify.app](https://v3rbatim.netlify.app). It is updated automatically from this repository.
+- **Locally:** download `index.html` and open it in Chrome, Edge or Safari.
+- **Your own copy:** the app is a single static file with no build step, so it can be hosted for free on Netlify or GitHub Pages.
 
 ## License
 
@@ -57,6 +63,10 @@ Open `index.html` in Chrome, Edge or Safari. Or host it for free on GitHub Pages
 ## Français
 
 **Ton souffleur vocal.** Charge un script Word, dis tes répliques à voix haute : v3rbatim passe à la suivante dès que c'est bon. Un mode prompteur suit ta voix pendant tes démos.
+
+### ▶️ [Essayer maintenant — v3rbatim.netlify.app](https://v3rbatim.netlify.app)
+
+Rien à installer : ouvre le lien dans Chrome, Edge ou Safari, sur ordinateur, tablette ou téléphone.
 
 - **Mode répétition** : les répliques s'affichent une à une, le micro vérifie ce que tu dis. Texte masquable pour apprendre par cœur, mot soufflé à la demande, bilan par réplique.
 - **Mode prompteur** : le texte défile tout seul en suivant ta voix, tolère les écarts et met en évidence les indications comme *(ouvrir le tableau de bord)*. Touche un passage pour t'y placer.
