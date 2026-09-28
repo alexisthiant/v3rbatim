@@ -38,6 +38,8 @@ header{display:flex; align-items:baseline; justify-content:space-between; gap:12
 .brand{font-family:var(--serif); font-size:1.6rem; font-weight:500; letter-spacing:-.01em}
 .brand small{font-family:var(--sans); font-size:.85rem; color:var(--muted); margin-inline-start:8px; font-weight:400}
 .hdr-right{display:flex; align-items:center; gap:14px}
+.gh{color:var(--muted); display:inline-flex; padding:4px}
+.gh:hover{color:var(--ink)}
 .uiLang{background:transparent; border:1px solid var(--line); border-radius:8px; padding:4px 6px; font-size:.9rem; color:var(--muted)}
 .link{background:none; border:0; padding:4px 0; color:var(--muted); text-decoration:underline; text-underline-offset:3px}
 .link:hover{color:var(--ink)}
@@ -155,6 +157,9 @@ body.prompting{overflow:hidden}
     <div class="brand">v3rbatim<small data-i18n="tagline">ton souffleur vocal</small></div>
     <div class="hdr-right">
       <button class="link" id="newScript" hidden data-i18n="newScript">Changer de script</button>
+      <a class="gh" href="https://github.com/alexisthiant/v3rbatim" target="_blank" rel="noopener" data-i18n-aria="sourceCode" data-i18n-title="sourceCode" aria-label="Code source sur GitHub" title="Code source sur GitHub">
+        <svg viewBox="0 0 16 16" width="20" height="20" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+      </a>
       <select id="uiLang" class="uiLang" data-i18n-aria="uiLangLabel" aria-label="Langue de l’interface">
         <option value="fr">Français</option>
         <option value="en">English</option>
@@ -308,6 +313,7 @@ body.prompting{overflow:hidden}
   const pl = (n, one, many) => n > 1 ? many : one;
   const I18N = {
     fr: {
+      sourceCode:'Code source sur GitHub',
       slideLabel:n=>`Diapositive ${n}`,
       toSetup:'Retour aux réglages',
       dlDemo:'Télécharger l’exemple (.docx)',
@@ -357,6 +363,7 @@ MARC : Nous prendrons vos questions à la fin de la présentation.
 LÉA : Merci, et place aux chiffres.`, demoSpeech:'fr-FR'
     },
     en: {
+      sourceCode:'Source code on GitHub',
       slideLabel:n=>`Slide ${n}`,
       toSetup:'Back to settings',
       dlDemo:'Download the example (.docx)',
@@ -406,6 +413,7 @@ MARK: We will take your questions at the end of the presentation.
 LEA: Thank you, and now over to the numbers.`, demoSpeech:'en-US'
     },
     es: {
+      sourceCode:'Código fuente en GitHub',
       slideLabel:n=>`Diapositiva ${n}`,
       toSetup:'Volver a los ajustes',
       dlDemo:'Descargar el ejemplo (.docx)',
@@ -455,6 +463,7 @@ MARCOS: Responderemos a vuestras preguntas al final de la presentación.
 LEA: Gracias, y vamos con las cifras.`, demoSpeech:'es-ES'
     },
     de: {
+      sourceCode:'Quellcode auf GitHub',
       slideLabel:n=>`Folie ${n}`,
       toSetup:'Zurück zu den Einstellungen',
       dlDemo:'Beispiel herunterladen (.docx)',
@@ -504,6 +513,7 @@ MARK: Eure Fragen beantworten wir am Ende der Präsentation.
 LEA: Danke, und jetzt zu den Zahlen.`, demoSpeech:'de-DE'
     },
     it: {
+      sourceCode:'Codice sorgente su GitHub',
       slideLabel:n=>`Diapositiva ${n}`,
       toSetup:'Torna alle impostazioni',
       dlDemo:'Scarica l’esempio (.docx)',
@@ -553,6 +563,7 @@ MARCO: Risponderemo alle vostre domande alla fine della presentazione.
 LEA: Grazie, e ora passiamo ai numeri.`, demoSpeech:'it-IT'
     },
     sv: {
+      sourceCode:'Källkod på GitHub',
       slideLabel:n=>`Bild ${n}`,
       toSetup:'Tillbaka till inställningarna',
       dlDemo:'Ladda ner exemplet (.docx)',
@@ -602,6 +613,7 @@ MARK: Vi tar era frågor i slutet av presentationen.
 LEA: Tack, och nu till siffrorna.`, demoSpeech:'sv-SE'
     },
     pt: {
+      sourceCode:'Código-fonte no GitHub',
       slideLabel:n=>`Diapositivo ${n}`,
       toSetup:'Voltar às definições',
       dlDemo:'Descarregar o exemplo (.docx)',
@@ -651,6 +663,7 @@ MARCOS: Responderemos às vossas perguntas no final da apresentação.
 LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
     },
     ar: {
+      sourceCode:'الشيفرة المصدرية على GitHub',
       slideLabel:n=>`الشريحة ${n}`,
       toSetup:'العودة إلى الإعدادات',
       dlDemo:'تنزيل المثال (‎.docx)',
@@ -724,6 +737,7 @@ LEA: Obrigada, e vamos aos números.`, demoSpeech:'pt-PT'
     document.querySelectorAll('[data-i18n-html]').forEach(el => el.innerHTML = t(el.dataset.i18nHtml));
     document.querySelectorAll('[data-i18n-ph]').forEach(el => el.placeholder = t(el.dataset.i18nPh));
     document.querySelectorAll('[data-i18n-aria]').forEach(el => el.setAttribute('aria-label', t(el.dataset.i18nAria)));
+    document.querySelectorAll('[data-i18n-title]').forEach(el => el.title = t(el.dataset.i18nTitle));
     // libellés des langues parlées dans la langue de l'interface
     let dn = null; try { dn = new Intl.DisplayNames([ui], {type:'language'}); } catch {}
     [...$('lang').options].forEach(o => { const n = dn ? dn.of(o.value) : o.value; o.textContent = n.charAt(0).toUpperCase() + n.slice(1); });
